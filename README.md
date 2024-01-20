@@ -1,8 +1,8 @@
-# PricingPagePro
+# PricingPageBuilderPro
 
 ## Overview
 
-PricingPagePro is a robust platform designed to simplify the creation and management of pricing pages for SaaS businesses. This repository contains the source code and resources for deploying PricingPagePro on your domain or Linux server. With integrated payment processors, customizable themes, A/B testing, and more, PricingPagePro streamlines your pricing strategies for optimal conversions.
+PricingPageBuilderPro is a robust platform designed to simplify the creation and management of pricing pages for SaaS businesses. This repository contains the source code and resources for deploying PricingPageBuilderPro on your domain or Linux server. With integrated payment processors, customizable themes, A/B testing, and more, PricingPageBuilderPro streamlines your pricing strategies for optimal conversions.
 
 ## Key Features
 
@@ -33,6 +33,6 @@ Explore examples and best practices:
 1. Clone this repository to your local machine.
 2. Configure your settings in the `config` file.
 3. Deploy PricingPagePro on your domain or Linux server.
-4. Explore our live demo: [PricingPagePro Demo](#).
+4. Explore our live demo: [PricingPageBuilderPro Demo](#).
 
-Visit our live demo for a firsthand experience of PricingPagePro's capabilities and start simplifying your SaaS pricing today!
+Visit our live demo for a firsthand experience of PricingPageBuilderPro's capabilities and start simplifying your SaaS pricing today!
