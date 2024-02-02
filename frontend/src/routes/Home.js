@@ -1,7 +1,8 @@
-// App.js
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import {ThreeDots} from 'react-loader-spinner'; // Import the loader
+import { ThreeDots } from 'react-loader-spinner';
+import { auth } from '../config/firebase'; // Ensure this path matches your Firebase config file's location
+import { signOut } from 'firebase/auth';
 
 const Home = () => {
   // State to manage if the content is loading
@@ -37,6 +38,16 @@ const Home = () => {
     window.location.href = '/create-widget';
   };
 
+  const handleSignOut = () => {
+    signOut(auth).then(() => {
+      // Sign-out successful.
+      window.location.href = '/login'; // Redirect to login page after sign out
+    }).catch((error) => {
+      // An error happened.
+      console.error("Sign out error:", error);
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <motion.nav
@@ -63,15 +74,24 @@ const Home = () => {
           >
             Catalog
           </motion.a>
-          <motion.a
-            href="#"
+          <motion.button
+            onClick={handleCreateWidget}
             className="px-4 py-2 bg-blue-500 text-white rounded-md"
             variants={buttonVariants}
             whileHover="hover"
             whileTap="tap"
           >
             Templates
-          </motion.a>
+          </motion.button>
+          <motion.button
+            onClick={handleSignOut}
+            className="px-4 py-2 bg-red-500 text-white rounded-md"
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
+          >
+            Sign Out
+          </motion.button>
         </div>
       </motion.nav>
       
@@ -81,13 +101,7 @@ const Home = () => {
           initial="hidden"
           animate="visible"
         >
-          {/* Use the ThreeDots loader */}
-          <ThreeDots
-            type="ThreeDots"
-            color="#3B82F6"
-            height={100}
-            width={100}
-          />
+          <ThreeDots color="#3B82F6" height={100} width={100} />
         </motion.div>
       ) : (
         <motion.div
@@ -105,7 +119,7 @@ const Home = () => {
             variants={buttonVariants}
             whileHover="hover"
             whileTap="tap"
-            onClick={() => handleCreateWidget()}
+            onClick={handleCreateWidget}
           >
             + Create Widget
           </motion.button>
