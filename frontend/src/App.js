@@ -1,9 +1,22 @@
+// App.js
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from './config/firebase';
+import ProtectedRoute from './components/ProtectedRoute';
 import { ThreeDots } from 'react-loader-spinner';
+
+// Print if user is Logged in or not using firebase
+import { auth } from './config/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log('Logged in');
+  } else {
+    console.log('Logged out');
+  }
+});
+
 
 // Lazy-loaded components
 const Home = lazy(() => import('./routes/Home'));
@@ -11,15 +24,6 @@ const About = lazy(() => import('./routes/About'));
 const SignUp = lazy(() => import('./routes/SignUp'));
 const LogIn = lazy(() => import('./routes/LogIn'));
 const CreateWidget = lazy(() => import('./routes/CreateWidget'));
-
-// Log login or logout status
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log('User is logged in');
-  } else {
-    console.log('User is logged out');
-  }
-});
 
 // Themed Loader Component
 const ThemedLoader = () => {
@@ -30,20 +34,30 @@ const ThemedLoader = () => {
   );
 };
 
-const App = () => (
-  <Router>
-    <AuthProvider> {/* Wrap routes with AuthProvider */}
-      <Suspense fallback={<ThemedLoader />}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/login" element={<LogIn />} />
-          <Route path="/create-widget" element={<CreateWidget />} />
-        </Routes>
-      </Suspense>
-    </AuthProvider>
-  </Router>
-);
+const App = () => {
+  return (
+    <Router>
+      <AuthProvider>
+        <Suspense fallback={<ThemedLoader />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/login" element={<LogIn />} />
+            <Route 
+              path="/create-widget" 
+              element={
+                <ProtectedRoute>
+                  <CreateWidget />
+                </ProtectedRoute>
+              } 
+            />
+            {/* Add more routes as needed */}
+          </Routes>
+        </Suspense>
+      </AuthProvider>
+    </Router>
+  );
+};
 
 export default App;

@@ -1,21 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ThreeDots } from 'react-loader-spinner';
-import { auth } from '../config/firebase'; // Ensure this path matches your Firebase config file's location
+import { useNavigate } from 'react-router-dom';
+import { auth } from '../config/firebase';
 import { signOut } from 'firebase/auth';
+import { useAuth } from '../contexts/AuthContext';
 
 const Home = () => {
-  // State to manage if the content is loading
   const [isLoading, setIsLoading] = useState(true);
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Simulate a network request
     setTimeout(() => {
       setIsLoading(false);
     }, 1000);
   }, []);
 
-  // Variants for Framer Motion to animate elements
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -34,95 +35,47 @@ const Home = () => {
   };
 
   const handleCreateWidget = () => {
-    // Redirect to the create widget page
-    window.location.href = '/create-widget';
+    navigate('/create-widget');
   };
 
-  const handleSignOut = () => {
-    signOut(auth).then(() => {
-      // Sign-out successful.
-      window.location.href = '/login'; // Redirect to login page after sign out
-    }).catch((error) => {
-      // An error happened.
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      navigate('/login');
+    } catch (error) {
       console.error("Sign out error:", error);
-    });
+    }
+  };
+
+  const handleAuthNavigation = () => {
+    navigate(currentUser ? '/dashboard' : '/login');
   };
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
-      <motion.nav
-        className="flex justify-between items-center p-4"
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
+      <motion.nav className="flex justify-between items-center p-4" initial="hidden" animate="visible" variants={containerVariants}>
         <a className="font-bold text-xl" href="#">Dashboard</a>
         <div className="space-x-4">
-          <motion.a
-            href="#"
-            className="text-gray-800"
-            variants={navLinkVariants}
-            whileHover="hover"
-          >
-            My Apps
-          </motion.a>
-          <motion.a
-            href="#"
-            className="text-gray-800"
-            variants={navLinkVariants}
-            whileHover="hover"
-          >
-            Catalog
-          </motion.a>
-          <motion.button
-            onClick={handleCreateWidget}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md"
-            variants={buttonVariants}
-            whileHover="hover"
-            whileTap="tap"
-          >
-            Templates
-          </motion.button>
-          <motion.button
-            onClick={handleSignOut}
-            className="px-4 py-2 bg-red-500 text-white rounded-md"
-            variants={buttonVariants}
-            whileHover="hover"
-            whileTap="tap"
-          >
-            Sign Out
-          </motion.button>
+          <motion.a href="#" className="text-gray-800" variants={navLinkVariants} whileHover="hover">My Apps</motion.a>
+          <motion.a href="#" className="text-gray-800" variants={navLinkVariants} whileHover="hover">Catalog</motion.a>
+          <motion.button onClick={handleCreateWidget} className="px-4 py-2 bg-blue-500 text-white rounded-md" variants={buttonVariants} whileHover="hover" whileTap="tap">Templates</motion.button>
+          {currentUser ? (
+            <motion.button onClick={handleSignOut} className="px-4 py-2 bg-red-500 text-white rounded-md" variants={buttonVariants} whileHover="hover" whileTap="tap">Sign Out</motion.button>
+          ) : (
+            <motion.button onClick={handleAuthNavigation} className="px-4 py-2 bg-green-500 text-white rounded-md" variants={buttonVariants} whileHover="hover" whileTap="tap">Log In</motion.button>
+          )}
         </div>
       </motion.nav>
       
       {isLoading ? (
-        <motion.div
-          className="flex justify-center items-center h-64"
-          initial="hidden"
-          animate="visible"
-        >
+        <motion.div className="flex justify-center items-center h-64" initial="hidden" animate="visible">
           <ThreeDots color="#3B82F6" height={100} width={100} />
         </motion.div>
       ) : (
-        <motion.div
-          className="max-w-xl mx-auto mt-16"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <motion.h1 className="text-4xl font-bold mb-6" variants={containerVariants}>
-            Create Your First Widget
-          </motion.h1>
+        <motion.div className="max-w-xl mx-auto mt-16" variants={containerVariants} initial="hidden" animate="visible">
+          <motion.h1 className="text-4xl font-bold mb-6" variants={containerVariants}>Create Your First Widget</motion.h1>
           <p className="mb-6">To create a widget, select an app in our catalog. Then use one of the ready-made templates or configure your widget from scratch.</p>
-          <motion.button
-            className="px-6 py-3 bg-green-500 text-white rounded-md hover:bg-green-600"
-            variants={buttonVariants}
-            whileHover="hover"
-            whileTap="tap"
-            onClick={handleCreateWidget}
-          >
-            + Create Widget
-          </motion.button>
+          <motion.button className="px-6 py-3 bg-green-500 text-white rounded-md hover:bg-green-600" variants={buttonVariants} whileHover="hover" whileTap="tap" onClick={handleCreateWidget}>+ Create Widget</motion.button>
         </motion.div>
       )}
 
