@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { auth } from '../config/firebase';
 import { signOut } from 'firebase/auth';
 import { useAuth } from '../contexts/AuthContext';
+import Navbar from '../components/NavBar';
 
 const Home = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +36,7 @@ const Home = () => {
   };
 
   const handleCreateWidget = () => {
-    navigate('/create-widget');
+    navigate('/choose-template');
   };
 
   const handleSignOut = async () => {
@@ -52,20 +53,8 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <motion.nav className="flex justify-between items-center p-4" initial="hidden" animate="visible" variants={containerVariants}>
-        <a className="font-bold text-xl" href="#">Dashboard</a>
-        <div className="space-x-4">
-          <motion.a href="#" className="text-gray-800" variants={navLinkVariants} whileHover="hover">My Apps</motion.a>
-          <motion.a href="#" className="text-gray-800" variants={navLinkVariants} whileHover="hover">Catalog</motion.a>
-          <motion.button onClick={handleCreateWidget} className="px-4 py-2 bg-blue-500 text-white rounded-md" variants={buttonVariants} whileHover="hover" whileTap="tap">Templates</motion.button>
-          {currentUser ? (
-            <motion.button onClick={handleSignOut} className="px-4 py-2 bg-red-500 text-white rounded-md" variants={buttonVariants} whileHover="hover" whileTap="tap">Sign Out</motion.button>
-          ) : (
-            <motion.button onClick={handleAuthNavigation} className="px-4 py-2 bg-green-500 text-white rounded-md" variants={buttonVariants} whileHover="hover" whileTap="tap">Log In</motion.button>
-          )}
-        </div>
-      </motion.nav>
+    <div className="min-h-screen bg-gray-100">
+      <Navbar />
       
       {isLoading ? (
         <motion.div className="flex justify-center items-center h-64" initial="hidden" animate="visible">
