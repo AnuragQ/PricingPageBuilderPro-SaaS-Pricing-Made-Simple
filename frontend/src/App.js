@@ -26,7 +26,7 @@ const LogIn = lazy(() => import('./routes/LogIn'));
 const ForgotPassword = lazy(() => import('./routes/ForgotPassword'));
 const CreateWidget = lazy(() => import('./routes/CreateWidget'));
 const ChooseTemplate = lazy(() => import('./routes/ChooseTemplate'));
-
+const MyApps = lazy(() => import('./routes/MyApps'));
 
 // Themed Loader Component
 const ThemedLoader = () => {
@@ -49,7 +49,8 @@ const App = () => {
             <Route path="/login" element={<LogIn />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path='/choose-template' element={<ChooseTemplate />} />
-           
+            <Route path='/my-apps' element={<MyApps />} />
+            
             <Route 
               path="/create-widget" 
               element={

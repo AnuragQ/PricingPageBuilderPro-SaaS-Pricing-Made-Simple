@@ -1,18 +1,77 @@
-import React, { useState, useEffect } from 'react';
-import { ThreeDots } from 'react-loader-spinner';
-import NavBar from '../components/NavBar';
+import React, { useState, useEffect } from "react";
+import { ThreeDots } from "react-loader-spinner";
+import NavBar from "../components/NavBar";
+import { motion } from "framer-motion";
 
 // Placeholder templates data
 const mockTemplates = [
-  { id: 1, image: 'https://source.unsplash.com/random/200x200?sig=1', title: 'Weather Widget', usage: 'Displays current weather.' },
-  { id: 2, image: 'https://source.unsplash.com/random/200x200?sig=2', title: 'Currency Converter', usage: 'Converts between different currencies.' },
+  {
+    id: 1,
+    image: "https://source.unsplash.com/random/200x200?sig=1",
+    title: "Weather Widget",
+    usage: "Displays current weather.",
+  },
+  {
+    id: 2,
+    image: "https://source.unsplash.com/random/200x200?sig=2",
+    title: "Currency Converter",
+    usage: "Converts between different currencies.",
+  },
+  {
+    id: 3,
+    image: "https://source.unsplash.com/random/200x200?sig=3",
+    title: "To-Do List",
+    usage: "Keep track of tasks and deadlines.",
+  },
+  {
+    id: 4,
+    image: "https://source.unsplash.com/random/200x200?sig=4",
+    title: "Calendar Widget",
+    usage: "Displays upcoming events and appointments.",
+  },
+  {
+    id: 5,
+    image: "https://source.unsplash.com/random/200x200?sig=5",
+    title: "News Feed",
+    usage: "Displays latest news articles.",
+  },
+  {
+    id: 6,
+    image: "https://source.unsplash.com/random/200x200?sig=6",
+    title: "Photo Gallery",
+    usage: "Displays a collection of photos.",
+  },
+  {
+    id: 7,
+    image: "https://source.unsplash.com/random/200x200?sig=7",
+    title: "Music Player",
+    usage: "Plays music from your library.",
+  },
+  {
+    id: 8,
+    image: "https://source.unsplash.com/random/200x200?sig=8",
+    title: "Video Player",
+    usage: "Plays videos from your library.",
+  },
+  {
+    id: 9,
+    image: "https://source.unsplash.com/random/200x200?sig=9",
+    title: "Social Media Feed",
+    usage: "Displays posts from social media.",
+  },
+  {
+    id: 10,
+    image: "https://source.unsplash.com/random/200x200?sig=10",
+    title: "Contact Form",
+    usage: "Allows users to send messages.",
+  },
   // Add more templates as needed
 ];
 
 const ChooseTemplate = () => {
   const [templates, setTemplates] = useState([]);
   const [displayedTemplates, setDisplayedTemplates] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -26,20 +85,20 @@ const ChooseTemplate = () => {
   }, []);
 
   const handleSearch = () => {
-    const filtered = templates.filter(template =>
+    const filtered = templates.filter((template) =>
       template.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setDisplayedTemplates(filtered); // Update displayed templates
   };
 
   const handleClearSearch = () => {
-    setSearchTerm(''); // Clear search term
+    setSearchTerm(""); // Clear search term
     setDisplayedTemplates(templates); // Reset displayed templates to full list
   };
 
   return (
     <>
-      <NavBar/>
+      <NavBar />
       <div className="min-h-screen bg-gray-100 p-8 flex justify-center">
         <div className="max-w-4xl w-full">
           <div className="flex items-center mb-6">
@@ -69,12 +128,22 @@ const ChooseTemplate = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {displayedTemplates.map(template => (
-                <div key={template.id} className="p-4 bg-white rounded-lg shadow-md">
-                  <img src={template.image} alt={template.title} className="h-40 w-full object-cover rounded-md" />
-                  <h3 className="mt-2 text-lg font-semibold">{template.title}</h3>
+              {displayedTemplates.map((template) => (
+                <motion.div
+                  key={template.id}
+                  whileHover={{ scale: 1.03 }}
+                  className="p-4 bg-white rounded-lg shadow-md cursor-pointer"
+                >
+                  <img
+                    src={template.image}
+                    alt={template.title}
+                    className="h-40 w-full object-cover rounded-md"
+                  />
+                  <h3 className="mt-2 text-lg font-semibold">
+                    {template.title}
+                  </h3>
                   <p className="text-sm text-gray-600">{template.usage}</p>
-                </div>
+                </motion.div>
               ))}
             </div>
           )}

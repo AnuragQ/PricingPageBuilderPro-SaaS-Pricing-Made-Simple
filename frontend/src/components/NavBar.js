@@ -50,7 +50,7 @@ const Navbar = () => {
         <motion.nav className="flex justify-between items-center p-4" initial="hidden" animate="visible" variants={containerVariants}>
             <a className="font-bold text-xl" href="/">Bill Brilliance</a>
             <div className="space-x-4">
-            <motion.a href="#" className="text-gray-800" variants={navLinkVariants} whileHover="hover">My Apps</motion.a>
+            <motion.a href="/my-apps" className="text-gray-800" variants={navLinkVariants} whileHover="hover">My Apps</motion.a>
             <motion.a href="#" className="text-gray-800" variants={navLinkVariants} whileHover="hover">Catalog</motion.a>
             <motion.button onClick={handleCreateWidget} className="px-4 py-2 bg-blue-500 text-white rounded-md" variants={buttonVariants} whileHover="hover" whileTap="tap">Templates</motion.button>
             {currentUser ? (
