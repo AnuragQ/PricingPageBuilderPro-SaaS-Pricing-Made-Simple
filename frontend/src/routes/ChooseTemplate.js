@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { ThreeDots } from "react-loader-spinner";
 import NavBar from "../components/NavBar";
 import { motion } from "framer-motion";
+import { useNavigate } from 'react-router-dom';
+
 
 // Placeholder templates data
 const mockTemplates = [
@@ -96,6 +98,12 @@ const ChooseTemplate = () => {
     setDisplayedTemplates(templates); // Reset displayed templates to full list
   };
 
+  let navigate = useNavigate();
+  const navigateToPath = (path) => {
+    // Navigate to the specified path
+    navigate(path);
+  }
+
   return (
     <>
       <NavBar />
@@ -133,6 +141,9 @@ const ChooseTemplate = () => {
                   key={template.id}
                   whileHover={{ scale: 1.03 }}
                   className="p-4 bg-white rounded-lg shadow-md cursor-pointer"
+                //  OnClick navigate to create widget page
+                //   onClick={() => navigateToPath(`/create-widget/${template.id}`)}
+                  onClick={() => navigateToPath(`/create-widget`)}
                 >
                   <img
                     src={template.image}
