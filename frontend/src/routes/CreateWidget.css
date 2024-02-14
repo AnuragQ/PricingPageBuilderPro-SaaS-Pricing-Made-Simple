@@ -1,0 +1,76 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #f4f4f4;
+  }
+  
+  .pricing-plan {
+    max-width: 300px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  .plan-title {
+    font-size: 1.5rem;
+    color: #333;
+  }
+  
+  .plan-description {
+    margin-top: 10px;
+    color: #666;
+  }
+  
+  .plan-price {
+    margin-top: 15px;
+    font-size: 1.2rem;
+    color: #ff6600;
+  }
+  
+  .plan-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .plan-button:hover {
+    background-color: #267bb5;
+  }
+  
+  .plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+    color: #666;
+  }
+  
+  .plan-features li {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .plan-features i {
+    margin-right: 10px;
+    color: #28a745; /* Green color for check */
+  }
+  
+  .plan-features .no-icon {
+    margin-right: 10px;
+    color: #dc3545; /* Red color for cross */
+  }
+  .icon-right-space {
+    margin-right: 8px; /* Adjust the space as needed */
+  }
