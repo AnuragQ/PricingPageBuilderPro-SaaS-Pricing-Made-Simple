@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // Import the icons you need
 import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 
+
 const CreateWidget = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [colors, setColors] = useState({
@@ -103,28 +104,100 @@ const CreateWidget = () => {
         </AnimatePresence>
         {/* Here main content starts*/}
         {/* Each Motion div represents a widget */}
-        <div className="flex-1 flex flex-row  p-4">
-          {Object.keys(colors).map((colorKey, index) => (
-            <motion.div
-              key={index}
-              className="m-2 p-20 py-10 rounded-lg shadow-lg flex flex-col "
-              style={{ backgroundColor: colors[colorKey] }}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <span>{`${colorKey.toUpperCase()}: ${colors[colorKey]}`}</span>
-              <h2 class="plan-title">Basic Plan</h2>
-              <p class="plan-description">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-              <p class="plan-price">$19.99/month</p>
-              <button class="plan-button">Get Started</button>
-              <ul class="plan-features">
-              <li><FontAwesomeIcon icon={faCheckCircle} size="lg" color="green" className="icon-right-space" /> 1 GB Storage</li>
-              <li><FontAwesomeIcon icon={faCheckCircle} size="lg" color="green" className="icon-right-space" /> 10 GB Bandwidth</li>
-              <li><FontAwesomeIcon icon={faCheckCircle} size="lg" color="green" className="icon-right-space" /> Email Support</li>
-              </ul>
-            </motion.div>
-          ))}
-        </div>
+
+        <div className="w-full overflow-x-auto p-4">
+        <table className="min-w-full table-fixed border-collapse">
+          <thead>
+            <tr>
+              {Object.keys(colors).map((colorKey, index) => (
+                <th key={index} className="p-4 text-left font-medium bg-gray-100">
+                  {index !== 0 ? `Plan ${index}` : `Features`}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="p-4 border-b">Price</td>
+              {Object.keys(colors).map((colorKey, index) => (
+                <td key={index} className="p-4 border-b" style={{ backgroundColor: colors[colorKey] }}>
+                  $19.99/month
+                </td>
+              ))}
+            </tr>
+{/** */}
+            {/* Data Storage Row */}
+            <tr>
+              <td className="p-4 border-b">Data Storage</td>
+              {Object.keys(colors).map((colorKey, index) => (
+                <td key={index} className="p-4 border-b" style={{ backgroundColor: colors[colorKey] }}>
+                  {/* Example data, adjust as necessary */}
+                  {index === 0 ? '2 GB' : '1 GB'}
+                </td>
+              ))}
+            </tr>
+            {/* Data Speed Row */}
+            <tr>
+              <td className="p-4 border-b">Data Speed</td>
+              {Object.keys(colors).map((colorKey, index) => (
+                <td key={index} className="p-4 border-b" style={{ backgroundColor: colors[colorKey] }}>
+                  {/* Ternary operator */}
+                  {index === 0 ? 
+                  (
+                    <>
+                      <FontAwesomeIcon icon={faCheckCircle} color="green" />
+                      <span> High Speed - 10 Mbps</span>
+                    </>
+                  ) 
+                   : 
+                   (
+                    <>
+                      <FontAwesomeIcon icon={faTimesCircle} color="red" />
+                      
+                      <span> Low Speed - 5 Mbps</span>
+                    </>
+                  )
+                   }
+                </td>
+              ))}
+            </tr>
+            {/* Email Support Row */}
+            <tr>
+              <td className="p-4 border-b">Email Support</td>
+              {Object.keys(colors).map((colorKey, index) => (
+                <td key={index} className="p-4 border-b" style={{ backgroundColor: colors[colorKey] }}>
+                  {/* Example data, adjust as necessary */}
+                  {index === 0 ? '24/7' : 'Business hours'}
+                  
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <td className="p-4">Action</td>
+              {Object.keys(colors).map((colorKey, index) => (
+                <td key={index} className="p-4" style={{ backgroundColor: colors[colorKey] }}>
+                  <button className="plan-button">Get Started</button>
+                </td>
+              ))}
+            </tr>
+{/** */}
+<div className="tooltip-container">
+  Tool tip to be added on each feature
+  <span className="tooltip-text">Tooltip text</span>
+</div>
+
+
+
+          </tbody>
+        </table>
+      </div>
+        
+
+
+
+        {/* below this is outside of main content*/}
+
+    
       </div>
     </>
   );
