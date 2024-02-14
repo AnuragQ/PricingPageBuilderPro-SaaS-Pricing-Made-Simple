@@ -131,8 +131,26 @@ const CreateWidget = () => {
               <td className="p-4 border-b">Data Storage</td>
               {Object.keys(colors).map((colorKey, index) => (
                 <td key={index} className="p-4 border-b" style={{ backgroundColor: colors[colorKey] }}>
-                  {/* Example data, adjust as necessary */}
-                  {index === 0 ? '2 GB' : '1 GB'}
+                  {/* Ternary operator */}
+                  <div className="tooltip-container">
+                  {index === 0 ? 
+                  (
+                    <>
+                      <FontAwesomeIcon icon={faCheckCircle} color="green" />
+                      <span > More Data</span>
+                      <span className="tooltip-text"> More Data - 2 GB</span>
+                    </>
+                  ) 
+                   : 
+                   (
+                    <>
+                      <FontAwesomeIcon icon={faTimesCircle} color="red" />
+                      <span > Less Data</span>
+                      <span className="tooltip-text"> Less Data - 1 GB</span>
+                    </>
+                  )
+                   }
+                   </div>
                 </td>
               ))}
             </tr>
@@ -142,22 +160,26 @@ const CreateWidget = () => {
               {Object.keys(colors).map((colorKey, index) => (
                 <td key={index} className="p-4 border-b" style={{ backgroundColor: colors[colorKey] }}>
                   {/* Ternary operator */}
+                  <div className="tooltip-container">
+
                   {index === 0 ? 
                   (
                     <>
                       <FontAwesomeIcon icon={faCheckCircle} color="green" />
-                      <span> High Speed - 10 Mbps</span>
+                      <span > High Speed</span>
+                      <span className="tooltip-text"> High Speed - 10 Mbps</span>
                     </>
                   ) 
                    : 
                    (
                     <>
                       <FontAwesomeIcon icon={faTimesCircle} color="red" />
-                      
-                      <span> Low Speed - 5 Mbps</span>
+                      <span > Low Speed</span>
+                      <span className="tooltip-text"> Low Speed - 5 Mbps</span>
                     </>
                   )
                    }
+                   </div>
                 </td>
               ))}
             </tr>
@@ -166,8 +188,23 @@ const CreateWidget = () => {
               <td className="p-4 border-b">Email Support</td>
               {Object.keys(colors).map((colorKey, index) => (
                 <td key={index} className="p-4 border-b" style={{ backgroundColor: colors[colorKey] }}>
-                  {/* Example data, adjust as necessary */}
-                  {index === 0 ? '24/7' : 'Business hours'}
+                  {/* Ternary operator */}
+                  {index === 1 ? 
+                  (
+                    <>
+                      <FontAwesomeIcon icon={faCheckCircle} color="green" />
+                      <span> 24/7</span>
+                    </>
+                  ) 
+                   : 
+                   (
+                    <>
+                      <FontAwesomeIcon icon={faTimesCircle} color="red" />
+                      
+                      <span> Business hours</span>
+                    </>
+                  )
+                   }
                   
                 </td>
               ))}
@@ -182,8 +219,8 @@ const CreateWidget = () => {
             </tr>
 {/** */}
 <div className="tooltip-container">
-  Tool tip to be added on each feature
-  <span className="tooltip-text">Tooltip text</span>
+  Have addes tool tip for data storage and data speed
+  <span className="tooltip-text">Just like in here</span>
 </div>
 
 
