@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import NavBar from "../components/NavBar"; // Adjust the import path as needed
+import PriceComponent from "../components/PriceComponent";
+import TitleComponent from "../components/TitleComponent";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaBars, FaTimes } from "react-icons/fa"; // Ensure react-icons is 
 import './CreateWidget.css';
@@ -112,6 +114,8 @@ const CreateWidget = () => {
               {Object.keys(colors).map((colorKey, index) => (
                 <th key={index} className="p-4 text-left font-medium bg-gray-100">
                   {index !== 0 ? `Plan ${index}` : `Features`}
+                  <TitleComponent title="Our Pricing Plans"subtitle="Select the best plan that suits your needs."/>
+                  
                 </th>
               ))}
             </tr>
@@ -121,7 +125,15 @@ const CreateWidget = () => {
               <td className="p-4 border-b">Price</td>
               {Object.keys(colors).map((colorKey, index) => (
                 <td key={index} className="p-4 border-b" style={{ backgroundColor: colors[colorKey] }}>
-                  $19.99/month
+                  <PriceComponent
+            prefix="from"
+            amount="29.99"
+            postfix="/mo"
+            currency="$"
+            discount="$19.99/month"
+            className="my-4"
+          />
+
                 </td>
               ))}
             </tr>
