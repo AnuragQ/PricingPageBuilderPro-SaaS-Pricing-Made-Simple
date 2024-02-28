@@ -1,11 +1,30 @@
-class User {
-  constructor(user_id, username, email, created_date, widget) {
-    this.user_id = user_id;
-    this.username = username;
-    this.email = email;
-    this.created_date = created_date;
-    this.widget = widget;
-  }
-}
+const mongoose = require('mongoose');
+    // - user_id
+    // - username: string
+    // - email: string
+    // - created_date: datetime
+    // - widget : Array
+const userSchema = new mongoose.Schema({
+    user_id: {
+        type: Number,
+        required: true
+    },
+    username: {
+        type: String,
+        required: true
+    },
+    email: {
+        type: String,
+        required: true
+    },
+    created_date: {
+        type: Date,
+        default: Date.now
+    },
+    widget: {
+        type: Array,
+        default: []
+    }
+});
 
 module.exports = User;
