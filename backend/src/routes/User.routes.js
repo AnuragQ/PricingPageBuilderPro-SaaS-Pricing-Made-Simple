@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-const user = require("../controllers/user.controller.js");
+// include the user controller
+const user = require("../controllers/User.controller.js");
 
 // Create a new User
 router.post("/", user.create);
@@ -16,6 +17,6 @@ router.get("/:userId", user.findOne);
 router.put("/:userId", user.update);
 
 // Delete a User with userId
-router.delete("/:userId", user.delete);
+router.delete("/:userId", user.remove);
 
 module.exports = router;

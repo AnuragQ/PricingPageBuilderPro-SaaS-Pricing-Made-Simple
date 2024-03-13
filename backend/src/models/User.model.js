@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
     // - email: string
     // - created_date: datetime
     // - widget : Array
-const userSchema = new mongoose.Schema({
+const User = new mongoose.Schema({
     user_id: {
         type: Number,
         required: true
