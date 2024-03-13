@@ -16,6 +16,6 @@ router.get("/:widgetId", widget.findOne);
 router.put("/:widgetId", widget.update);
 
 // Delete a Widget with widgetId
-router.delete("/:widgetId", widget.delete);
+router.delete("/:widgetId", widget.remove);
 
 module.exports = router;

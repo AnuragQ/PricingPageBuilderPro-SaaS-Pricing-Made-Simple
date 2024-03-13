@@ -16,6 +16,6 @@ router.get("/:templateId", template.findOne);
 router.put("/:templateId", template.update);
 
 // Delete a Template with templateId
-router.delete("/:templateId", template.delete);
+router.delete("/:templateId", template.remove);
 
 module.exports = router;
