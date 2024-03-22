@@ -22,6 +22,15 @@ const Signup = () => {
 
     try {
       await createUserWithEmailAndPassword(auth, email, password);
+      // Send a post request to your backend to create a new user
+      await fetch(`${process.env.REACT_APP_BASE_URL}/api/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
       window.location.href = '/'; // Redirect to home page or dashboard
     } catch (error) {
       alert(error.message);

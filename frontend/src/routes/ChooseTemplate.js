@@ -1,108 +1,56 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ThreeDots } from "react-loader-spinner";
 import NavBar from "../components/NavBar";
 import { motion } from "framer-motion";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
-
-// Placeholder templates data
-const mockTemplates = [
-  {
-    id: 1,
-    image: "https://source.unsplash.com/random/200x200?sig=1",
-    title: "Weather Widget",
-    usage: "Displays current weather.",
-  },
-  {
-    id: 2,
-    image: "https://source.unsplash.com/random/200x200?sig=2",
-    title: "Currency Converter",
-    usage: "Converts between different currencies.",
-  },
-  {
-    id: 3,
-    image: "https://source.unsplash.com/random/200x200?sig=3",
-    title: "To-Do List",
-    usage: "Keep track of tasks and deadlines.",
-  },
-  {
-    id: 4,
-    image: "https://source.unsplash.com/random/200x200?sig=4",
-    title: "Calendar Widget",
-    usage: "Displays upcoming events and appointments.",
-  },
-  {
-    id: 5,
-    image: "https://source.unsplash.com/random/200x200?sig=5",
-    title: "News Feed",
-    usage: "Displays latest news articles.",
-  },
-  {
-    id: 6,
-    image: "https://source.unsplash.com/random/200x200?sig=6",
-    title: "Photo Gallery",
-    usage: "Displays a collection of photos.",
-  },
-  {
-    id: 7,
-    image: "https://source.unsplash.com/random/200x200?sig=7",
-    title: "Music Player",
-    usage: "Plays music from your library.",
-  },
-  {
-    id: 8,
-    image: "https://source.unsplash.com/random/200x200?sig=8",
-    title: "Video Player",
-    usage: "Plays videos from your library.",
-  },
-  {
-    id: 9,
-    image: "https://source.unsplash.com/random/200x200?sig=9",
-    title: "Social Media Feed",
-    usage: "Displays posts from social media.",
-  },
-  {
-    id: 10,
-    image: "https://source.unsplash.com/random/200x200?sig=10",
-    title: "Contact Form",
-    usage: "Allows users to send messages.",
-  },
-  // Add more templates as needed
-];
+const fetchTemplates = async () => {
+  const response = await fetch(
+    `${process.env.REACT_APP_BASE_URL}/api/templates`,
+    {
+      headers: {
+        Accept: "application/json",
+      },
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`Network response was not ok (status: ${response.status})`);
+  }
+  const contentType = response.headers.get("content-type");
+  if (!contentType || !contentType.includes("application/json")) {
+    throw new Error("Received non-JSON response from the server");
+  }
+  return response.json();
+};
 
 const ChooseTemplate = () => {
-  const [templates, setTemplates] = useState([]);
-  const [displayedTemplates, setDisplayedTemplates] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    setIsLoading(true);
-    // Simulate fetching data
-    setTimeout(() => {
-      setTemplates(mockTemplates);
-      setDisplayedTemplates(mockTemplates); // Initially display all templates
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+  const [filteredTemplates, setFilteredTemplates] = useState([]);
+  const {
+    data: templates,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["templates"],
+    queryFn: fetchTemplates,
+  });
 
   const handleSearch = () => {
-    const filtered = templates.filter((template) =>
-      template.title.toLowerCase().includes(searchTerm.toLowerCase())
+    // Filter the templates based on the search term
+    const filtered = templates?.filter((template) =>
+      template.plan_title.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    setDisplayedTemplates(filtered); // Update displayed templates
+    setFilteredTemplates(filtered);
   };
 
   const handleClearSearch = () => {
     setSearchTerm(""); // Clear search term
-    setDisplayedTemplates(templates); // Reset displayed templates to full list
+    setFilteredTemplates([]); // Clear filtered templates
   };
 
   let navigate = useNavigate();
-  const navigateToPath = (path) => {
-    // Navigate to the specified path
-    navigate(path);
-  }
 
   return (
     <>
@@ -116,6 +64,11 @@ const ChooseTemplate = () => {
               className="flex-grow px-4 py-2 border border-blue-300 rounded-full shadow-sm focus:ring-blue-500 focus:border-blue-500"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSearch();
+                }
+              }}
             />
             <button
               onClick={handleSearch}
@@ -134,26 +87,31 @@ const ChooseTemplate = () => {
             <div className="flex justify-center items-center h-64">
               <ThreeDots color="#3B82F6" height={50} width={50} />
             </div>
+          ) : isError ? (
+            <div>Error: {error.message}</div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {displayedTemplates.map((template) => (
+              {(filteredTemplates.length > 0
+                ? filteredTemplates
+                : templates
+              )?.map((template) => (
                 <motion.div
-                  key={template.id}
+                  key={template._id}
                   whileHover={{ scale: 1.03 }}
                   className="p-4 bg-white rounded-lg shadow-md cursor-pointer"
-                //  OnClick navigate to create widget page
-                //   onClick={() => navigateToPath(`/create-widget/${template.id}`)}
-                  onClick={() => navigateToPath(`/create-widget`)}
+                  onClick={() => navigate(`/create-widget`)}
                 >
                   <img
-                    src={template.image}
-                    alt={template.title}
+                    src={template.template_image}
+                    alt={template.plan_title}
                     className="h-40 w-full object-cover rounded-md"
                   />
                   <h3 className="mt-2 text-lg font-semibold">
-                    {template.title}
+                    {template.plan_title}
                   </h3>
-                  <p className="text-sm text-gray-600">{template.usage}</p>
+                  <p className="text-sm text-gray-600">
+                    {template.plan_description}
+                  </p>
                 </motion.div>
               ))}
             </div>

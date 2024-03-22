@@ -27,6 +27,15 @@ const ForgotPassword = lazy(() => import('./routes/ForgotPassword'));
 const CreateWidget = lazy(() => import('./routes/CreateWidget'));
 const ChooseTemplate = lazy(() => import('./routes/ChooseTemplate'));
 const MyApps = lazy(() => import('./routes/MyApps'));
+const CreateTemplate = lazy(() => import('./routes/CreateTemplate'));
+
+// templates
+const Template1 = lazy(() => import('./templates/Template1'));
+const Template2 = lazy(() => import('./templates/Template2'));
+const Template3 = lazy(() => import('./templates/Template3'));
+const Template4 = lazy(() => import('./templates/Template4'));
+const Template5 = lazy(() => import('./templates/Template5'));
+const Template6 = lazy(() => import('./templates/Template6'));
 
 // Themed Loader Component
 const ThemedLoader = () => {
@@ -59,6 +68,21 @@ const App = () => {
                 </ProtectedRoute>
               } 
             />
+            <Route
+              path="/create-template"
+              element={
+                <ProtectedRoute>
+                  <CreateTemplate />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route path="/template1" element={<Template1 />} />
+            <Route path="/template2" element={<Template2 />} />
+            <Route path="/template3" element={<Template3 />} />
+            <Route path="/template4" element={<Template4 />} />
+            <Route path="/template5" element={<Template5 />} />
+            <Route path="/template6" element={<Template6 />} />
             {/* Add more routes as needed */}
           </Routes>
         </Suspense>
