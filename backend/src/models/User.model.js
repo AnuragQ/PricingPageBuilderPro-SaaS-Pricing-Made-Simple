@@ -7,11 +7,9 @@ const mongoose = require('mongoose');
 const User = new mongoose.Schema({
     user_id: {
         type: Number,
-        required: true
     },
     username: {
         type: String,
-        required: true
     },
     email: {
         type: String,
@@ -24,7 +22,11 @@ const User = new mongoose.Schema({
     widget: {
         type: Array,
         default: []
+    },
+    isAdmin: {
+        type: Boolean,
+        default: false
     }
 });
 
-module.exports = User;
+module.exports = mongoose.model('User', User);

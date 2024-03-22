@@ -12,25 +12,32 @@ const templateSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    plan_pricing: {
+    plan_description: {
         type: String,
         required: true
+    },
+    template_image: {
+        type: String,
+        required: true
+    },
+    template_code: {
+        type: String,
+        required: true
+    },
+    plan_pricing: {
+        type: String,
     },
     plan_currency: {
         type: String,
-        required: true
     },
     plan_features_core: {
         type: String,
-        required: true
     },
     plan_features_addons: {
         type: String,
-        required: true
     },
     plan_duration: {
         type: String,
-        required: true
     }
 });
 

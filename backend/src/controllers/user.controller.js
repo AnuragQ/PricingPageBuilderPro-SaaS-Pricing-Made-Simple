@@ -3,19 +3,15 @@ const User = require('../models/User.model');
 // Create and Save a new User
 async function create(req, res) {
     // Validate request
-    if (!req.body.username) {
+    if (!req.body.email) {
         return res.status(400).send({
-            message: "User username can not be empty"
+            message: "User email cannot be empty"
         });
     }
 
     // Create a User
     const user = new User({
-        user_id: req.body.user_id || "0",
-        username: req.body.username,
         email: req.body.email,
-        created_date: req.body.created_date || Date.now(),
-        widget: req.body.widget
     });
 
     // Save User in the database

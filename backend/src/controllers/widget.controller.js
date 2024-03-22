@@ -1,4 +1,4 @@
-const Widget = require('../models/widget.model');
+const Widget = require('../models/Widget.model');
 
 // Create and Save a new Widget
 async function create(req, res) {

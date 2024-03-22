@@ -3,21 +3,28 @@ const Template = require('../models/Template.model');
 // Create and Save a new Template
 async function create(req, res) {
     // Validate request
-    if (!req.body.plan_title) {
+    if (!req.body.plan_title || !req.body.plan_description || !req.body.template_image || !req.body.template_code) {
         return res.status(400).send({
-            message: "Template plan_title can not be empty"
+            message: "All fields are required!"
         });
     }
 
-    // Create a Template
     const template = new Template({
         plan_title: req.body.plan_title,
-        plan_pricing: req.body.plan_pricing,
-        plan_currency: req.body.plan_currency,
-        plan_features_core: req.body.plan_features_core,
-        plan_features_addons: req.body.plan_features_addons,
-        plan_duration: req.body.plan_duration
+        plan_description: req.body.plan_description,
+        template_image: req.body.template_image,
+        template_code: req.body.template_code
     });
+
+    // // Create a Template
+    // const template = new Template({
+    //     plan_title: req.body.plan_title,
+    //     plan_pricing: req.body.plan_pricing,
+    //     plan_currency: req.body.plan_currency,
+    //     plan_features_core: req.body.plan_features_core,
+    //     plan_features_addons: req.body.plan_features_addons,
+    //     plan_duration: req.body.plan_duration
+    // });
 
     // Save Template in the database
     template.save()
