@@ -2,6 +2,7 @@ import React from 'react';
 import PriceComponent from '../components/PriceComponent';
 import TitleComponent from '../components/TitleComponent';
 import FeatureComponent from '../components/FeatureComponent';
+import PriceCardComponent from '../components/PriceCardComponent';
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,11 +33,19 @@ const PricePage=()=>{
      // State Management for Title Component
     const [titleName, setTitleName] = useState('Title Name');
     const [captionName, setCaptionName] = useState('Caption Name');
+    const [headingColor, setHeadingColor] = React.useState('#000000');
 
 
      // State Management for Feature Component
      const [features, setFeatures] = useState([]);
      const [newFeature, setNewFeature] = useState('');
+
+     // State Management for priceCard Quantity
+     const [numPriceCards, setNumPriceCards] = useState(1); 
+
+     // State Management for priceCardIndex
+     const [PriceCardsIndex, setNumPriceCardsIndex] = useState(1);
+
 
      // State Management Functions for feature Components
      const handleFeatureChange = (index, value) => {
@@ -63,17 +72,12 @@ const PricePage=()=>{
     };
     
 
-
-
-
- 
-
     return (
     
         <div className="flex h-screen">
         {/* Sidebar toggle button */}
         <div className="cursor-pointer" onClick={handleToggleSidebar}>
-          {isSidebarOpen ? <FaTimes className="text-gray-600" /> : <FaBars className="text-gray-600" />}
+        {isSidebarOpen ? <FaTimes className="text-gray-600" /> : <FaBars className="text-gray-600" />}
         </div>
         {/*Side bar form selection*/}
         { isSidebarOpen &&(
@@ -103,10 +107,24 @@ const PricePage=()=>{
                     Button
                   </button>
                   <button
-                    className="p-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition duration-300"
+                    className="mb-4 p-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition duration-300"
                     onClick={() => setActiveForm('image')}
                   >
                     Image
+                  </button>
+
+                  {/*  */}
+                  <button
+                    className="mb-4 p-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition duration-300"
+                    onClick={() => setActiveForm('price_count')}
+                  >
+                    Num Price Cards
+                  </button>
+                  <button
+                    className="mb-4 p-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition duration-300"
+                    onClick={() => setActiveForm('index')}
+                  >
+                    Price Card Index
                   </button>
                  
                   
@@ -160,26 +178,82 @@ const PricePage=()=>{
       )}
       {/* Sidebar content Title*/}
       {isSidebarOpen && activeForm === 'title' && (
-        <div className="w-64 bg-gray-200 p-4 space-y-4">
-          <label className="block text-sm font-semibold text-gray-700">Title Name</label>
-          <input
-            type="text"
-            placeholder="Enter title name"
-            value={titleName}
-            onChange={(e) => setTitleName(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-500"
-          />
+      <div className="w-64 bg-gray-200 p-4 space-y-4">
+        <label className="block text-sm font-semibold text-gray-700">Title Name</label>
+        <input
+          type="text"
+          placeholder="Enter title name"
+          value={titleName}
+          onChange={(e) => setTitleName(e.target.value)}
+          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-500"
+        />
 
-          <label className="block text-sm font-semibold text-gray-700">Caption Name</label>
+        <label className="block text-sm font-semibold text-gray-700">Caption Name</label>
+        <input
+          type="text"
+          placeholder="Enter caption name"
+          value={captionName}
+          onChange={(e) => setCaptionName(e.target.value)}
+          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-500"
+        />
+
+        {/* Color picker for heading color */}
+    {/* Color picker for heading color in a rounded box */}
+    <label className="block text-sm font-semibold text-gray-700">Heading Color</label>
+    <div className="flex items-center">
+      <input
+        type="color"
+        value={headingColor}
+        onChange={(e) => setHeadingColor(e.target.value)}
+        className="w-10 h-10 rounded-full cursor-pointer focus:outline-none focus:ring focus:border-blue-500"
+      />
+    </div>
+
+      </div>
+    )}
+    {/* sidebar price card count */}
+    {isSidebarOpen && activeForm === 'price_count' && (
+      
+        <div className="w-64 bg-gray-200 p-4 space-y-4">
+          {/* <label className="block text-sm font-semibold text-gray-700">Price Card Number</label>
           <input
-            type="text"
-            placeholder="Enter caption name"
-            value={captionName}
-            onChange={(e) => setCaptionName(e.target.value)}
+                        type="number"
+                        value={numPriceCards}
+                        onChange={(e) => setNumPriceCards(parseInt(e.target.value))}
+                        min={1} // Ensure minimum value is 1
+                        className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-500"
+                    /> */}
+          <label className="block text-sm font-semibold text-gray-700">Price Card Number</label>
+          <select
+            value={numPriceCards}
+            onChange={(e) => setNumPriceCards(parseInt(e.target.value))}
             className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-500"
-          />
+          >
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
         </div>
       )}
+      {/* sidebar price card index */}
+    {isSidebarOpen && activeForm === 'index' && (
+      
+      <div className="w-64 bg-gray-200 p-4 space-y-4">
+        <label className="block text-sm font-semibold text-gray-700">Price Card Number</label>
+        <select
+          value={PriceCardsIndex}
+          onChange={(e) => setNumPriceCardsIndex(parseInt(e.target.value))}
+          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-500"
+         >
+          {/* Generate options based on the numPriceCards state */}
+          {Array.from({ length: numPriceCards }).map((_, index) => (
+          <option key={index} value={index}>{index + 1}</option>
+          ))}
+        </select>
+      </div>
+    )}
+
       {/* Sidebar content Features*/}
       {isSidebarOpen && activeForm === 'features' && (
   <div className="w-64 bg-gray-200 p-4 space-y-4">
@@ -226,20 +300,60 @@ const PricePage=()=>{
 
 
 
-
-
-
-
-
-
-
-
       
       {/* Main content */}
+
+
+      <div className="flex flex-grow p-4 flex-wrap justify-center">
+      {
+        Array.from({length:numPriceCards}).map(
+          (_,index)=>(
+            <PriceCardComponent
+            key={index}
+            PriceCardsIndex={PriceCardsIndex}
+            titleName={titleName}
+            headingColor={headingColor}
+            captionName={captionName}
+            prefix={prefix}
+            amount={amount}
+            postfix={postfix}
+            currency={currency}
+            features={features}
+            newFeature={newFeature}
+            onAddFeature={handleAddFeature}
+            onNewFeatureChange={(e) => setNewFeature(e.target.value)}
+            onFeatureChange={handleFeatureChange}
+            onRemoveFeature={handleRemoveFeature}
+            style={{ flex: "1 0 auto" }}
+        />  
+          )
+        )
+      }
+      </div>
+
+
+      {/* <div className="flex-grow p-4">
+                <PriceCardComponent
+                    titleName={titleName}
+                    headingColor={headingColor}
+                    captionName={captionName}
+                    prefix={prefix}
+                    amount={amount}
+                    postfix={postfix}
+                    currency={currency}
+                    features={features}
+                    newFeature={newFeature}
+                    onAddFeature={handleAddFeature}
+                    onNewFeatureChange={(e) => setNewFeature(e.target.value)}
+                    onFeatureChange={handleFeatureChange}
+                    onRemoveFeature={handleRemoveFeature}
+                />
+            </div> */}
      
-            <div className="flex-grow p-4">
+      {/* <div className="flex-grow p-4">
             <TitleComponent 
             title={titleName}
+            color={headingColor}
             subtitle={captionName}
             />
             <PriceComponent
@@ -250,9 +364,11 @@ const PricePage=()=>{
                 className="my-4"
             />
             <FeatureComponent features={features} />
-            </div>
+            </div> */}
+        
             
         </div>
+        
     );
 }; 
 export default PricePage;
