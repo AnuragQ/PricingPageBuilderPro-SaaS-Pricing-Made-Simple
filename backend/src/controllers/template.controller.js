@@ -3,7 +3,7 @@ const Template = require('../models/Template.model');
 // Create and Save a new Template
 async function create(req, res) {
     // Validate request
-    if (!req.body.plan_title || !req.body.plan_description || !req.body.template_image || !req.body.template_code) {
+    if (!req.body.plan_title || !req.body.plan_description || !req.body.template_image || !req.body.template_code || !req.body.review_form_data) {
         return res.status(400).send({
             message: "All fields are required!"
         });
@@ -13,7 +13,8 @@ async function create(req, res) {
         plan_title: req.body.plan_title,
         plan_description: req.body.plan_description,
         template_image: req.body.template_image,
-        template_code: req.body.template_code
+        template_code: req.body.template_code,
+        review_form_data: req.body.review_form_data,
     });
 
     // // Create a Template
