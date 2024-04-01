@@ -45,40 +45,40 @@ const convertCodeToJSON = (html) => {
 
   const $ = cheerio.load(html);
 
-  function convertElementToJSON(element) {
+  const convertElementToJSON = (element, parentKey = null) => {
+    let uniqueIdCounter = 1000;
+  
     const getFullOpeningTag = (elem) => {
       const attributes = Object.keys(elem.attribs)
         .map((key) => `${key}="${elem.attribs[key]}"`)
         .join(" ");
       return `<${elem.tagName}${attributes.length ? " " + attributes : ""}>`;
     };
-
-    const processElement = (elem) => {
+  
+    const processElement = (elem, parentKey) => {
       if (elem.type === "text" && $(elem).text().trim()) {
+        // For text nodes, use the parent's unique_key if available
         return {
           value: $(elem).text().trim(),
-          unique_key: (++uniqueIdCounter).toString(),
+          unique_key: parentKey, // Inherit parentKey for text nodes
         };
       } else if (elem.type === "tag") {
+        const uniqueKey = (++uniqueIdCounter).toString();
         const obj = {
           opening_tag: getFullOpeningTag(elem),
           closing_tag: `</${elem.tagName}>`,
-          unique_key: (++uniqueIdCounter).toString(),
+          unique_key: uniqueKey,
         };
         const childNodes = $(elem).contents().toArray();
-        const children = childNodes
-          .map((childElem) => processElement(childElem))
-          .filter((child) => child !== null);
-        if (children.length > 0) {
-          obj.children = children;
-        }
+        obj.children = childNodes.map((childElem) => processElement(childElem, uniqueKey)).filter(Boolean);
         return obj;
       }
       return null;
     };
-
+  
     return processElement(element);
-  }
+  };
+  
 
   const rootElement = $("body")
     .children()
@@ -202,6 +202,7 @@ const TemplateForm = () => {
   const handleReview = (e) => {
     e.preventDefault();
     const json = convertCodeToJSON(formData.templateCode);
+    console.log(json);
     setJsonPreview(json);
     setModalOpen(true);
     setJsonTree(JSON.parse(json));
