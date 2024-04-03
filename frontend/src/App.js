@@ -28,7 +28,7 @@ const CreateWidget = lazy(() => import('./routes/CreateWidget'));
 const ChooseTemplate = lazy(() => import('./routes/ChooseTemplate'));
 const MyApps = lazy(() => import('./routes/MyApps'));
 const CreateTemplate = lazy(() => import('./routes/CreateTemplate'));
-
+const Profile = lazy(() => import('./routes/Profile'));
 // templates
 const Template1 = lazy(() => import('./templates/Template1'));
 const Template2 = lazy(() => import('./templates/Template2'));
@@ -59,7 +59,14 @@ const App = () => {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path='/choose-template' element={<ChooseTemplate />} />
             <Route path='/my-apps' element={<MyApps />} />
-            
+            <Route 
+              path='/profile' 
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+            />
             <Route 
               path="/create-widget" 
               element={
