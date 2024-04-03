@@ -9,30 +9,39 @@ const mongoose = require("mongoose");
 // - description : string
 
 const paymentSchema = new mongoose.Schema({
-    amount: {
+    id: {
         type: String,
         required: true,
     },
-    currency: {
-        type: String,
+    session: {
+        type: Object,
         required: true,
     },
-    status: {
-        type: String,
-        required: true,
-    },
-    date: {
-        type: String,
-        required: true,
-    },
-    method: {
-        type: String,
-        required: true,
-    },
-    description: {
-        type: String,
-        required: true,
-    },
+    
+    // amount: {
+    //     type: String,
+    //     required: true,
+    // },
+    // currency: {
+    //     type: String,
+    //     required: true,
+    // },
+    // status: {
+    //     type: String,
+    //     required: true,
+    // },
+    // date: {
+    //     type: String,
+    //     required: true,
+    // },
+    // method: {
+    //     type: String,
+    //     required: true,
+    // },
+    // description: {
+    //     type: String,
+    //     required: true,
+    // },
     });
 
 const Payment = mongoose.model("Payment", paymentSchema);

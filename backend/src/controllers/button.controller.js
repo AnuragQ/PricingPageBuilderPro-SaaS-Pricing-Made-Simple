@@ -73,8 +73,45 @@ async function findOne(req, res) {
       });
     });
 }
+async function updateOne(req, res) {
+  //only update the fields that are passed in the request body
+  toUpdate = {};
+  if (req.body.label) {
+    toUpdate.label = req.body.label;
+  }
+  if (req.body.price) {
+    toUpdate.price = req.body.price;
+  }
+  if (req.body.currency) {
+    toUpdate.currency = req.body.currency;
+  }
+  if (req.body.widget_id) {
+    toUpdate.widget_id = req.body.widget_id;
+  }
 
+  Button.findOneAndUpdate(req.params.button_id, toUpdate,
+    { new: true })
+    .then((button) => {
+      if (!button) {
+        return res.status(404).send({
+          message: "Button not found with id " + req.params.button_id,
+        });
+      }
+      res.send(button);
+    })
+    .catch((err) => {
+      if (err.kind === "ObjectId") {
+        return res.status(404).send({
+          message: "Button not found with id " + req.params.button_id,
+        });
+      }
+      return res.status(500).send({
+        message: "Error updating button with id " + req.params.button_id,
+      });
+    });
+}
 module.exports = {
   create,
   findOne,
+  updateOne,
 };

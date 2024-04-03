@@ -17,6 +17,7 @@ const mongoose = require("mongoose");
 
 //     },..]
 
+
 const widgetSchema = new mongoose.Schema({
   widget_id: {
     type: String,

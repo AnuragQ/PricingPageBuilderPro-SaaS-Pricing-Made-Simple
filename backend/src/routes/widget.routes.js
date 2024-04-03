@@ -13,7 +13,7 @@ router.get("/:email", widget.findAllOfUser);
 router.get("/:widgetId", widget.findOne);
 
 // Update a Widget with widgetId
-router.put("/:widgetId", widget.update);
+router.post("/:widgetId", widget.update);
 
 // Delete a Widget with widgetId
 router.delete("/:widgetId", widget.remove);
