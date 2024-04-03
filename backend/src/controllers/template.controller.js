@@ -1,4 +1,4 @@
-const Template = require('../models/Template.model');
+const Template = require('../models/template.model');
 
 // Create and Save a new Template
 async function create(req, res) {
