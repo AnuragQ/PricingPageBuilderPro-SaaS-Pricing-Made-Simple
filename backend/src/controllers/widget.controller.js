@@ -1,4 +1,5 @@
 const Widget = require("../models/widget.model");
+const Widget = require("../models/widget.model");
 const Button_Model = require("../models/button.model");
 
 const { v4: uuidv4 } = require("uuid");
@@ -31,36 +32,10 @@ async function create(req, res) {
     });
   }
 
-  // Success URL and Failure URL are compulsory
-  if (!req.body.success_url) {
-    return res.status(400).send({
-      message: "Widget success_url can not be empty",
-    });
-  }
-
-  if (!req.body.failure_url) {
-    return res.status(400).send({
-      message: "Widget failure_url can not be empty",
-    });
-  }
-
-  // Payment Button IDs are compulsory
-  if (!req.body.payment_button_ids) {
-    return res.status(400).send({
-      message: "Widget payment_button_ids can not be empty",
-    });
-  }
-
-  // Name is compulsory
-  if (!req.body.name) {
-    return res.status(400).send({
-      message: "Widget name can not be empty",
-    });
-  }
-
   // Create a Widget
   const widget = new Widget({
-    widget_id: req.body.widget_id || "",
+    // widget id is auto generated uuid
+    widget_id: req.body.widget_id || uuidv4(),
     name: req.body.name,
     created_by: req.body.created_by,
     created_at: req.body.created_at || Date.now(),
@@ -77,28 +52,17 @@ async function create(req, res) {
   });
 
   // Save Widget in the database
-  try {
-    const savedWidget = await widget.save();
-
-    // Get id of the widget and update the payment_button_ids
-    const widget_id = savedWidget._id;
-
-    // Loop through the payment_button_ids and update the widget_id
-    for (let i = 0; i < req.body.payment_button_ids.length; i++) {
-      // Find the button with the field named button_id and update the widget_id
-      await Button_Model.findByIdAndUpdate(
-        req.body.payment_button_ids[i],
-        { widget_id: widget_id },
-        { new: true }
-      );
-    }
-
-    res.send(savedWidget);
-  } catch (err) {
-    res.status(500).send({
-      message: err.message || "Some error occurred while creating the Widget.",
+  widget
+    .save()
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message:
+          err.message || "Some error occurred while creating the Widget.",
+      });
     });
-  }
 }
 
 // Retrieve and return all widgets of a particular user emain from the database.
