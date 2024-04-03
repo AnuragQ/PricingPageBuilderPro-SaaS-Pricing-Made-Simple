@@ -1,19 +1,147 @@
 import React, { useState, useRef, useEffect } from "react";
-import NavBar from "../components/NavBar"; // Adjust the import path as needed
+import NavBar from "../components/NavBar";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaBars, FaTimes } from "react-icons/fa"; // Ensure react-icons is installed
+import { FaBars, FaTimes, FaPlus } from "react-icons/fa";
 import { useQuery } from "@tanstack/react-query";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Modal from "@mui/material/Modal";
+import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
+import currencies from "../resources/currencies";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import { auth } from "../config/firebase";
+import ReactDOMServer from "react-dom/server";
 
 const CreateWidget = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const contentRef = useRef(null);
 
   const [reviewFormData, setReviewFormData] = useState(null);
+
+  const [open, setOpen] = useState(false);
+  const [paymentOptions, setPaymentOptions] = useState([]);
+  const [currency, setCurrency] = useState("usd");
+  const [successUrl, setSuccessUrl] = useState("");
+  const [failureUrl, setFailureUrl] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [widgetName, setWidgetName] = useState("New Widget");
+  const [menuBar, setMenuBar] = useState("");
+
+  const handleCurrencyChange = (event) => {
+    setCurrency(event.target.value);
+  };
+
+  const handleOpenModal = () => {
+    setOpen(true);
+    // Simulate fetching labels for payment options
+    const paymentBtns = document.querySelectorAll("[data-payment-btn]");
+    const options = Array.from(paymentBtns).map((btn) => ({
+      label: btn.getAttribute("data-payment-btn"),
+      value: "",
+    }));
+    setPaymentOptions(options);
+  };
+
+  const handleCloseModal = () => setOpen(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Submitted Pricing:", paymentOptions);
+
+    console.log("Success URL:", successUrl);
+    console.log("Failure URL:", failureUrl);
+
+    // Get email of the user, firebase
+    const user = auth.currentUser;
+    if (user) {
+      console.log("User email:", user.email);
+    }
+
+    // Log image URL
+    console.log("Image URL:", imageUrl);
+
+    const selectedCurrency = currency;
+    console.log("Selected currency:", selectedCurrency);
+
+    console.log("=======================");
+
+    // Prepare json array [{label: "Basic plan", price:10, currency:"usd"}, {label: "Pro plan", price:20, currency:"usd"]
+    const pricingData = paymentOptions.map((option) => ({
+      label: option.label,
+      price: option.value,
+      currency: selectedCurrency,
+    }));
+
+    console.log("Pricing data:", pricingData);
+
+    // Convert menuBar to html and log it
+    const htmlString = ReactDOMServer.renderToString(menuBar);
+    console.log(htmlString);
+    return;
+
+    // Make a post request and send this json array
+    // Below is the request
+    const button_ids_json = fetch(
+      `${process.env.REACT_APP_BASE_URL}/api/pricing`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          paymentButtonData: pricingData,
+        }),
+      }
+    );
+
+    const buttonsData = button_ids_json.json();
+
+    // buttonsData is like [label:id, label:id, label:id]. I want to attach this new id as a data attribute to the button
+    // Loop through the buttons and attach the id
+    const paymentBtns = document.querySelectorAll("[data-payment-btn]");
+    paymentBtns.forEach((btn, index) => {
+      btn.setAttribute("data-payment-id", buttonsData[index]);
+    });
+
+    // Get updated code of the template, wrap html boilerplate around it and save it in the database
+    let updatedTemplateCode = contentRef.current.innerHTML;
+
+    // Change all the className to class
+    updatedTemplateCode = updatedTemplateCode.replace(/className=/g, "class=");
+
+    // Add the template code here...
+
+    // Save the widget in the database
+    const widgetData = fetch(`${process.env.REACT_APP_BASE_URL}/api/widgets`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: widgetName,
+        created_by: user.email,
+        code: updatedTemplateCode,
+        image_url: imageUrl,
+        success_url: successUrl,
+        failure_url: failureUrl,
+
+        // Code of sidebar
+      }),
+    });
+
+    handleCloseModal();
+  };
+
+  const handlePriceChange = (index, newValue) => {
+    const updatedOptions = [...paymentOptions];
+    updatedOptions[index].value = newValue;
+    setPaymentOptions(updatedOptions);
+  };
 
   const {
     data: templateData,
@@ -47,15 +175,18 @@ const CreateWidget = () => {
   const updateElementText = (uniqueKey, newText) => {
     // Find the element by its unique key
     // Add unique class of parent so it will become ".newClass [data-unique-key="${uniqueKey}"]"
-    // It will help trigger correct element 
-    const element = document.querySelector(`#widget-wrapper [data-unique-key="${uniqueKey}"]`);
-  
+    // It will help trigger correct element
+    const element = document.querySelector(
+      `#widget-wrapper [data-unique-key="${uniqueKey}"]`
+    );
+
     if (!element) return; // Element not found
-  
+
     // Preserve child elements (like <span>) by only updating the text nodes directly
     Array.from(element.childNodes).forEach((node) => {
       // Node type 3 is a text node
-      if (node.nodeType === 3) { // Text node
+      if (node.nodeType === 3) {
+        // Text node
         node.nodeValue = newText;
       }
     });
@@ -74,7 +205,6 @@ const CreateWidget = () => {
       );
       console.log("Corresponding element:", correspondingElement);
 
-
       if (correspondingElement) {
         // Update the text of the corresponding element
         updateElementText(uniqueKey, inputField.value);
@@ -86,6 +216,7 @@ const CreateWidget = () => {
   useEffect(() => {
     if (templateData && contentRef.current) {
       try {
+        setImageUrl(templateData.template_image);
         const parsedTemplateCode = JSON.parse(templateData.template_code);
         const domElement = createDomFromJson(parsedTemplateCode);
         contentRef.current.innerHTML = ""; // Clear existing content
@@ -229,10 +360,10 @@ const CreateWidget = () => {
         // Update the current heading and its unique key for the next accordion
         currentHeading = item.headingText;
         currentHeadingKey = item.unique_key;
-      } 
+      }
       // else {
-        // Otherwise, accumulate this item as a field in the current accordion
-        currentFields.push(item);
+      // Otherwise, accumulate this item as a field in the current accordion
+      currentFields.push(item);
       // }
     });
 
@@ -263,10 +394,20 @@ const CreateWidget = () => {
     return <div>{accordions}</div>;
   };
 
+  // UseEffect to set manuBar when renderMenu is called
+  useEffect(() => {
+    setMenuBar(renderMenu());
+  }, [renderMenu]);
+
+  const handleCreateWidget = () => {
+    console.log("Create widget clicked");
+    handleOpenModal();
+  };
+
   return (
     <>
       <NavBar />
-      <div className="flex h-screen bg-[#F4F7F6]">
+      <div className="flex h-fit bg-[#F4F7F6]">
         {/* Background color adjusted to a modern palette */}
         <AnimatePresence>
           <motion.aside
@@ -296,6 +437,30 @@ const CreateWidget = () => {
                 className="px-4 py-2"
               >
                 {renderMenu()}
+
+                <div class="mt-8 flex justify-center items-center">
+                  <button
+                    type="button"
+                    onClick={handleCreateWidget}
+                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-base px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-5 w-5 me-2"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
+                    Create Widget
+                  </button>
+                </div>
               </motion.div>
             )}
           </motion.aside>
@@ -313,6 +478,120 @@ const CreateWidget = () => {
           )}
         </div>
       </div>
+
+      {open && (
+        <div
+          className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full"
+          id="my-modal"
+          onClick={handleCloseModal}
+        >
+          <div
+            className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mt-3 text-center">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">
+                Confirm Pricing
+              </h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500">
+                  Please choose these prices carefully as these will be the
+                  final prices.
+                </p>
+              </div>
+              <form onSubmit={handleSubmit} className="w-full mt-4">
+                {paymentOptions.map((option, index) => (
+                  <div key={index} className="mb-4 px-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      {option.label}
+                    </label>
+                    <input
+                      type="number"
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      value={option.value}
+                      onChange={(e) => handlePriceChange(index, e.target.value)}
+                    />
+                  </div>
+                ))}
+
+                <div className="mb-4 mt-12 px-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Success URL
+                  </label>
+                  <input
+                    type="text"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    value={successUrl}
+                    name="success_url"
+                    onChange={(e) => setSuccessUrl(e.target.value)}
+                  />
+                </div>
+
+                <div className="mb-12 px-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Failure URL
+                  </label>
+                  <input
+                    type="text"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    value={failureUrl}
+                    name="failure_url"
+                    onChange={(e) => setFailureUrl(e.target.value)}
+                  />
+                </div>
+
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Currency
+                </label>
+                <Select
+                  labelId="currency-select-label"
+                  id="currency-select"
+                  value={currency}
+                  label="Currency"
+                  onChange={handleCurrencyChange}
+                  // fullWidth
+                  className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-[90%]" // Tailwind CSS classes
+                >
+                  {Object.keys(currencies).map((key) => (
+                    <MenuItem key={key} value={key.toLowerCase()}>
+                      {currencies[key].name} ({currencies[key].symbol})
+                    </MenuItem>
+                  ))}
+                </Select>
+
+                <div className="mb-4 mt-12 px-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Widget Name
+                  </label>
+                  <input
+                    type="text"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    value={widgetName}
+                    name="widget_name"
+                    onChange={(e) => setWidgetName(e.target.value)}
+                  />
+                </div>
+
+                <div className="items-center px-4 py-3 mt-12">
+                  <button
+                    onClick={handleCloseModal}
+                    className="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="mt-3 px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  >
+                    Submit
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
