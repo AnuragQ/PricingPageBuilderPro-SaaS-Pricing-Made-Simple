@@ -5,8 +5,10 @@ const mongoose = require('mongoose');
     // - created_date: datetime
     // - widget : Array
 const User = new mongoose.Schema({
+    // user id is uuid
     user_id: {
-        type: Number,
+        type: String,
+        required: true
     },
     username: {
         type: String,
@@ -26,7 +28,11 @@ const User = new mongoose.Schema({
     isAdmin: {
         type: Boolean,
         default: false
-    }
+    },
+    stripe_key: {
+        type: String,
+        default: ''
+    },
 });
 
 module.exports = mongoose.model('User', User);

@@ -1,9 +1,11 @@
 const express = require("express");
 const app = express();
 const config = require("./src/config/config.js");
-const userRoutes = require("./src/routes/User.routes.js");
-const widgetRoutes = require("./src/routes/Widget.routes.js");
-const templateRoutes = require("./src/routes/Template.routes.js");
+const userRoutes = require("./src/routes/user.routes.js");
+const widgetRoutes = require("./src/routes/widget.routes.js");
+const templateRoutes = require("./src/routes/template.routes.js");
+const paymentRoutes = require("./src/routes/payment.routes.js");
+const buttonRoutes = require("./src/routes/button.routes.js");
 const cors = require("cors");
 const { connectDatabse } = require("./src/services/db_connect.js");
 app.use(cors());
@@ -16,7 +18,11 @@ app.get("/", (req, res) => {
 app.use("/api/users", userRoutes);
 app.use("/api/widgets", widgetRoutes);
 app.use("/api/templates", templateRoutes);
-
+app.use("/api/payments" , paymentRoutes);
+app.use("/api/buttons", buttonRoutes);
+app.use((req, res) => {
+  res.status(404).send({ message: "URL not found" });
+});
 app.listen(config.port, () => {
   console.log("Server is running on port 3000");
 });
