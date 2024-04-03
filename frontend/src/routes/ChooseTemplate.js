@@ -99,7 +99,7 @@ const ChooseTemplate = () => {
                   key={template._id}
                   whileHover={{ scale: 1.03 }}
                   className="p-4 bg-white rounded-lg shadow-md cursor-pointer"
-                  onClick={() => navigate(`/create-widget`)}
+                  onClick={() => navigate(`/create-widget?templateId=${template._id}`)}
                 >
                   <img
                     src={template.template_image}

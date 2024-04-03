@@ -24,6 +24,10 @@ const templateSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    review_form_data: {
+        type: String,
+        required: true
+    },
     plan_pricing: {
         type: String,
     },

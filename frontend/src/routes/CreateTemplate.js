@@ -4,15 +4,12 @@ import Navbar from "../components/NavBar";
 import * as cheerio from "cheerio";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
 import Typography from "@mui/material/Typography";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
+import { is } from "cheerio";
 
 const CustomTextField = ({
   defaultValue,
@@ -23,7 +20,6 @@ const CustomTextField = ({
   const inputRef = useRef(null);
 
   useEffect(() => {
-    // Directly apply data-unique-id attribute to the input DOM element
     if (inputRef.current) {
       inputRef.current.setAttribute("data-unique-id", uniqueId);
     }
@@ -36,7 +32,7 @@ const CustomTextField = ({
       fullWidth
       margin="normal"
       InputProps={{
-        inputRef: inputRef, // Use inputRef to reference the input element
+        inputRef: inputRef,
         onContextMenu: handleContextMenu,
       }}
       {...props}
@@ -49,38 +45,40 @@ const convertCodeToJSON = (html) => {
 
   const $ = cheerio.load(html);
 
-  function convertElementToJSON(element) {
+  const convertElementToJSON = (element, parentKey = null) => {
+    let uniqueIdCounter = 1000;
+  
     const getFullOpeningTag = (elem) => {
       const attributes = Object.keys(elem.attribs)
         .map((key) => `${key}="${elem.attribs[key]}"`)
         .join(" ");
       return `<${elem.tagName}${attributes.length ? " " + attributes : ""}>`;
     };
-
-    const processElement = (elem) => {
+  
+    const processElement = (elem, parentKey) => {
       if (elem.type === "text" && $(elem).text().trim()) {
-        return { value: $(elem).text().trim(), unique_key: (++uniqueIdCounter).toString()};
+        // For text nodes, use the parent's unique_key if available
+        return {
+          value: $(elem).text().trim(),
+          unique_key: parentKey, // Inherit parentKey for text nodes
+        };
       } else if (elem.type === "tag") {
+        const uniqueKey = (++uniqueIdCounter).toString();
         const obj = {
           opening_tag: getFullOpeningTag(elem),
           closing_tag: `</${elem.tagName}>`,
-          unique_key: (++uniqueIdCounter).toString(),
-          test_key: "test",
+          unique_key: uniqueKey,
         };
         const childNodes = $(elem).contents().toArray();
-        const children = childNodes
-          .map((childElem) => processElement(childElem))
-          .filter((child) => child !== null);
-        if (children.length > 0) {
-          obj.children = children;
-        }
+        obj.children = childNodes.map((childElem) => processElement(childElem, uniqueKey)).filter(Boolean);
         return obj;
       }
       return null;
     };
-
+  
     return processElement(element);
-  }
+  };
+  
 
   const rootElement = $("body")
     .children()
@@ -99,9 +97,9 @@ const ContextMenu = ({
   mouseX,
   mouseY,
   handleCloseMenu,
-  handleEdit,
-  handleRemove,
-  handleRemoveWithChildren,
+  handleRemoveElement,
+  handleAddHeadingAbove,
+  // handleAddHeadingBelow,
 }) => {
   return (
     <Menu
@@ -115,57 +113,51 @@ const ContextMenu = ({
           : undefined
       }
     >
-      <MenuItem onClick={handleEdit}>Edit Element</MenuItem>
-      <MenuItem onClick={handleRemove}>Remove Current Element</MenuItem>
-      <MenuItem onClick={handleRemoveWithChildren}>
-        Remove Element and Children
-      </MenuItem>
+      <MenuItem onClick={handleAddHeadingAbove}>Add heading above</MenuItem>
+      {/* <MenuItem onClick={handleAddHeadingBelow}>Add heading below</MenuItem> */}
+      <MenuItem onClick={handleRemoveElement}>Remove current element</MenuItem>
     </Menu>
   );
 };
 
-const getTitleFromTag = (tag) => {
-  const matches = tag.match(/<(\w+)/);
-  return matches ? matches[1].toUpperCase() : "Section";
-};
+var reviewFormObj = {};
 
-const RecursiveAccordion = ({ data, handleContextMenu }) => {
+const RecursiveTextFields = ({
+  data,
+  handleContextMenu,
+  handleRemove,
+  handleAddHeadingAbove,
+  // handleAddHeadingBelow,
+}) => {
   const renderChildren = (children, parent) => {
     return children.map((child, index) => {
       const elementKey = `${parent ? parent + "-" : ""}${index}`;
       const uniqueId = child["unique_key"];
-      console.log("Unique ID:", uniqueId);
       if (child.value) {
+        // Add unique_key and value to reviewFormObj
+        let obj = {
+          unique_key: uniqueId,
+          value: child.value,
+        };
+
+        reviewFormObj[uniqueId] = obj;
+
         return (
-            <CustomTextField
-              key={elementKey}
-              defaultValue={child.value}
-              handleContextMenu={(e) => handleContextMenu(e, child)}
-              uniqueId={uniqueId}
-            />
-          );
-      } else if (child.children) {
-        const title = getTitleFromTag(child.opening_tag);
-        return (
-          <Accordion
+          <CustomTextField
             key={elementKey}
-            onContextMenu={(e) => handleContextMenu(e, child)}
-          >
-            <div data-unique-id={uniqueId}>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>{title}</Typography>
-              </AccordionSummary>
-            </div>
-            <AccordionDetails id={`accordion-details-${uniqueId}`}>
-              {renderChildren(child.children, uniqueId)}
-            </AccordionDetails>
-          </Accordion>
+            defaultValue={child.value}
+            handleContextMenu={(e) => handleContextMenu(e, child)}
+            uniqueId={uniqueId}
+          />
         );
+      } else if (child.children) {
+        return renderChildren(child.children, uniqueId);
       }
       return null;
     });
   };
 
+  console.log(reviewFormObj);
   return <div>{renderChildren(data.children, "", handleContextMenu)}</div>;
 };
 
@@ -181,12 +173,12 @@ const TemplateForm = () => {
   const [jsonPreview, setJsonPreview] = useState("");
   const [contextMenu, setContextMenu] = useState(null);
   const [selectedElement, setSelectedElement] = useState(null);
+  const [jsonTree, setJsonTree] = useState(null);
+  const [reviewFormData, setReviewFormData] = useState(reviewFormObj);
 
   const handleContextMenu = (event, element) => {
     event.preventDefault();
     event.stopPropagation();
-    console.log("Right-clicked element:", element);
-    console.log("Right-clicked DOM element:", event.target);
     setSelectedElement(element);
     setContextMenu({
       mouseX: event.clientX,
@@ -209,36 +201,132 @@ const TemplateForm = () => {
 
   const handleReview = (e) => {
     e.preventDefault();
-    // Missing conversion step here. Should be using convertCodeToJSON to process formData.templateCode
-    const json = convertCodeToJSON(formData.templateCode); // Correct way to convert and use the JSON
+    const json = convertCodeToJSON(formData.templateCode);
+    console.log(json);
     setJsonPreview(json);
     setModalOpen(true);
+    setJsonTree(JSON.parse(json));
   };
 
   const handleClose = () => setModalOpen(false);
 
-  //   const handleCloseMenu = () => {
-  //     setContextMenu(null);
-  //   };
-
-  const handleEditElement = () => {
-    console.log("Edit:", selectedElement);
-    // Logic to edit the selected element
-    // Log the unique ID of the selected element
-    handleCloseMenu();
+  const generateRandomKey = (length = 8) => {
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let result = "";
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(
+        Math.floor(Math.random() * characters.length)
+      );
+    }
+    return result;
   };
+
+  const removeElement = (json, uniqueId, reviewFormData) => {
+    const updatedJsonTree = { ...json };
+
+    // Filter out the element to remove
+    const updatedChildren = updatedJsonTree.children.filter(
+      (child) => child.unique_key !== uniqueId
+    );
+
+    // Update the json tree with the filtered children
+    updatedJsonTree.children = updatedChildren;
+
+    // Remove corresponding entry from reviewFormData
+    if (reviewFormData[uniqueId]) {
+      delete reviewFormData[uniqueId];
+    }
+
+    return updatedJsonTree;
+  };
+
+  const addHeadingAbove = (uniqueId) => {
+    const newHeadingKey = generateRandomKey();
+    const headingText = window.prompt(
+      "Please enter a heading:",
+      "Default Heading"
+    );
+
+    console.log("Before adding heading above");
+    console.log(reviewFormData);
+
+    // Update the existing element with uniqueId to indicate that a heading is added above
+    const updatedReviewFormData = { ...reviewFormData };
+    if (updatedReviewFormData[uniqueId]) {
+      updatedReviewFormData[uniqueId].isHeadingAbove = true;
+      updatedReviewFormData[uniqueId].headingText = headingText;
+    }
+
+    // Add the new heading
+    // updatedReviewFormData[newHeadingKey] = newHeading;
+
+    setReviewFormData(updatedReviewFormData);
+
+    if (headingText) {
+      // Assume each CustomTextField renders an element with a data attribute `data-unique-id`
+      const targetElement = document.querySelector(
+        `[data-unique-id="${selectedElement.unique_key}"]`
+      );
+      if (targetElement) {
+        const headingElement = document.createElement("h1");
+        headingElement.textContent = headingText;
+
+        // Add class to the heading element
+        headingElement.classList.add("text-xl", "font-bold", "mb-2", "mt-8");
+
+        // Inserting directly before the parent of target element in the DOM
+        targetElement.parentNode.parentNode.parentNode.insertBefore(
+          headingElement,
+          targetElement.parentNode.parentNode
+        );
+      }
+    }
+    console.log("Data below");
+    console.log(JSON.stringify(updatedReviewFormData, null, 2));
+  };
+
+  // const addHeadingBelow = (json, uniqueId, reviewFormData) => {
+  //   const newHeadingKey = generateRandomKey();
+  //   const newHeading = { value: "New Heading", unique_key: newHeadingKey };
+
+  //   // Add entry to reviewFormData
+  //   reviewFormData[newHeadingKey] = newHeading;
+
+  //   // Find the index of the element with the uniqueId
+  //   const index = json.children.findIndex(
+  //     (child) => child.unique_key === uniqueId
+  //   );
+
+  //   // Insert the new heading after the element with uniqueId
+  //   json.children.splice(index + 1, 0, newHeading);
+
+  //   return json;
+  // };
 
   const handleRemoveElement = () => {
-    console.log("Remove:", selectedElement);
-    // Logic to remove the selected element
+    const updatedJsonTree = removeElement(jsonTree, selectedElement.unique_key);
+    // setJsonTree(updatedJsonTree);
+    console.log(JSON.stringify(updatedJsonTree, null, 2));
+    // setJsonPreview(JSON.stringify(updatedJsonTree, null, 2));
     handleCloseMenu();
   };
 
-  const handleRemoveElementAndChildren = () => {
-    console.log("Remove with children:", selectedElement);
-    // Logic to remove the selected element and its children
+  const handleAddHeadingAbove = () => {
+    addHeadingAbove(selectedElement.unique_key);
     handleCloseMenu();
   };
+
+  // const handleAddHeadingBelow = () => {
+  //   const updatedJsonTree = addHeadingBelow(
+  //     jsonTree,
+  //     selectedElement.unique_key
+  //   );
+  //   setJsonTree(updatedJsonTree);
+  //   console.log(JSON.stringify(updatedJsonTree, null, 2));
+  //   setJsonPreview(JSON.stringify(updatedJsonTree, null, 2));
+  //   handleCloseMenu();
+  // };
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -246,7 +334,8 @@ const TemplateForm = () => {
 
     const postData = {
       ...formData,
-      template_code: jsonPreview,
+      template_code: JSON.stringify(jsonTree),
+      review_form_data: JSON.stringify(reviewFormData),
     };
 
     try {
@@ -292,7 +381,6 @@ const TemplateForm = () => {
 
     window.addEventListener("click", handleWindowClick);
 
-    // Remove the event listener on cleanup
     return () => window.removeEventListener("click", handleWindowClick);
   }, []);
 
@@ -368,7 +456,6 @@ const TemplateForm = () => {
               required
               className="mt-1 p-2 w-full border rounded-md"
               rows="4"
-              // placeholder="Enter your template code here..."
             ></textarea>
           </div>
           <button
@@ -390,21 +477,22 @@ const TemplateForm = () => {
           <Typography id="modal-modal-title" variant="h6" component="h2">
             Review Your Template
           </Typography>
-          {jsonPreview && console.log(jsonPreview)}
           {jsonPreview && (
-            <RecursiveAccordion
-              data={jsonPreview ? JSON.parse(jsonPreview) : {}}
+            <RecursiveTextFields
+              data={JSON.parse(jsonPreview)}
               handleContextMenu={handleContextMenu}
+              handleRemove={handleRemoveElement}
+              handleAddHeadingAbove={handleAddHeadingAbove}
+              // handleAddHeadingBelow={handleAddHeadingBelow}
             />
           )}
           <Button
-            variant="contained"
-            color="primary"
             onClick={handleSubmit}
-            style={{ marginTop: 20 }}
+            className="mt-4"
             disabled={isSubmitting}
+            variant="contained"
           >
-            {isSubmitting ? "Saving..." : "Save Template"}
+            Submit Template
           </Button>
         </Box>
       </Modal>
@@ -413,9 +501,9 @@ const TemplateForm = () => {
           mouseX={contextMenu.mouseX}
           mouseY={contextMenu.mouseY}
           handleCloseMenu={handleCloseMenu}
-          handleEdit={handleEditElement}
-          handleRemove={handleRemoveElement}
-          handleRemoveWithChildren={handleRemoveElementAndChildren}
+          handleRemoveElement={handleRemoveElement}
+          handleAddHeadingAbove={handleAddHeadingAbove}
+          // handleAddHeadingBelow={handleAddHeadingBelow}
         />
       )}
     </div>
