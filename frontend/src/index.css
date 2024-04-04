@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    background-color: rgb(240, 242, 245);
+}
+
+#nightowl-switcher-default {
+  position: sticky !important;
+  left: calc(-80px + 100vw) !important;
+  bottom: 20px !important;
+}

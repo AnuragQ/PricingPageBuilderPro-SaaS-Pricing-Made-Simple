@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <button
+      onclick="fetch('https://short-tools-switch.loca.lt/api/payments/create-checkout-session', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        
+                        items: [
+                          { id: 'd914a12d-7384-40a7-a934-1869c2a1a79f'},
+                        ],
+                      }),
+                    })
+                    .then(res => {
+                      if (res.ok) return res.json();
+                      return res.json().then(json => Promise.reject(json));
+                    })
+                    .then(({ url }) => {
+                      window.location = url;
+                    })
+                    .catch(e => {
+                      console.error(e.error);
+                    });"
+    >
+      Checkout
+    </button>
+  </body>
+</html>
