@@ -1,13 +1,14 @@
 // load .env variables
 require("dotenv").config();
-// const Widget = require("../models/widget.model");
+const Widget = require("../models/widget.model");
 const Button_Model = require("../models/button.model");
 const { ObjectId } = require("mongoose").Types;
 const mongoose = require("mongoose");
 const fs = require("fs");
-const archiver = require("archiver");
 const NetlifyAPI = require("netlify");
-
+const JSZip = require("jszip");
+const archiver = require("archiver");
+const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 // model has below fields
 // - name
@@ -213,6 +214,38 @@ async function remove(req, res) {
       });
     });
 }
+
+function createZipWithHTML(htmlString) {
+  // Ensure the 'source' directory exists
+  fs.mkdirSync("source", { recursive: true });
+
+  // Write the HTML string to 'source/index.html'
+  fs.writeFileSync("source/index.html", htmlString);
+
+  // Create a file to stream archive data to
+  let output = fs.createWriteStream("source.zip");
+  let archive = archiver("zip", {
+    zlib: { level: 9 }, // Sets the compression level
+  });
+
+  // Listen for all archive data to be written
+  output.on("close", function () {
+    console.log(archive.pointer() + " total bytes");
+    console.log(
+      "Archiver has been finalized and the output file descriptor has closed."
+    );
+  });
+
+  // Pipe archive data to the file
+  archive.pipe(output);
+
+  // Append 'source' directory to the archive
+  archive.directory("source/", "source");
+
+  // Finalize the archive
+  archive.finalize();
+}
+
 async function deploy(req, res) {
   try {
     const widget = await Widget.findOne({ widget_id: req.params.widgetId });
@@ -230,38 +263,23 @@ async function deploy(req, res) {
       site_id = site.id;
     }
 
-    const output = fs.createWriteStream(__dirname + "/widget.zip");
-    const archive = archiver("zip", {
-      zlib: { level: 9 },
-    });
-
-    output.on("close", () => {
-      // sleep for 5 seconds to allow the zip file to be written
-      setTimeout(() => {
-        console.log(archive.pointer() + " total bytes");
-        console.log(
-          "archiver has been finalized and the output file descriptor has closed."
-        );
-      }, 5000);
-      netlifyClient
-        .deploy(site_id, __dirname + "/widget.zip")
-        .then((deploy) => {
-          widget.deployment_url = deploy.deploy.url;
-          widget.site_id = site_id;
-          widget.save();
-          res.send({ message: "Widget deployed successfully!" });
-        })
-        .catch((err) => {
-          console.error(err);
-          res.status(500).send({
-            message: "Could not deploy widget with id " + req.params.widgetId,
-          });
-        });
-    });
-
-    archive.pipe(output);
-    archive.append(code, { name: "index.html" });
-    archive.finalize();
+    createZipWithHTML(code);
+    try {
+      const deploy = await netlifyClient.deploy(
+        site_id,
+        "/Users/anuragsharma/Main/code/univ/IP/PricingPageBuilderPro-SaaS-Pricing-Made-Simple/backend/source.zip"
+      );
+      console.log(deploy);
+      await Widget.findOneAndUpdate(
+        { widget_id: req.params.widgetId },
+        { deployment_url: deploy.deploy_url, site_id: site_id }
+      );
+    } catch (err) {
+      console.error(err);
+      res
+        .status(500)
+        .send({ message: "An error occurred while deploying widget." });
+    }
   } catch (err) {
     console.error(err);
     res
