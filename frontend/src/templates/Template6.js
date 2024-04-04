@@ -1,5 +1,5 @@
 import React from "react";
- 
+
 const Template6 = () => {
   return (
     <section className="py-4 md:py-8 bg-gray-900 text-gray-100">
@@ -13,7 +13,7 @@ const Template6 = () => {
           Shift wants everyone to automate their Laravel upgrades, so we keep
           prices as low as robotically possible.
         </p>
- 
+
         <div className="mt-12 md:mt-24 grid gap-y-6 sm:grid-cols-2 sm:gap-x-6 md:gap-x-12 xl:gap-x-24">
           <a
             href="#"
@@ -24,7 +24,7 @@ const Template6 = () => {
                 Shifty Plans
               </h3>
             </div>
- 
+
             <div className="flex-1 py-12 font-bold leading-none text-6xl md:text-7xl md:leading-none lg:text-8xl lg:leading-none xl:text-9xl xl:leading-none">
               <div className="inline-block">
                 <span className="text-lg" style={{ verticalAlign: "super" }}>
@@ -34,7 +34,7 @@ const Template6 = () => {
                 <small className="block text-lg text-right">per year</small>
               </div>
             </div>
- 
+
             {/* Feature List */}
             <ul className="mx-auto text-left md:text-xl md:leading-normal font-bold space-y-1">
               {/* Feature Item */}
@@ -84,7 +84,7 @@ const Template6 = () => {
               </li>
               {/* Repeat for each feature */}
             </ul>
- 
+
             <div className="mt-16">
               <div className="group inline-flex items-center justify-center text-xl md:text-2xl font-bold text-white px-6 py-3 rounded bg-rose-500 hover:bg-red-600 focus:bg-red-600">
                 Subscribe &amp; Save
@@ -101,7 +101,7 @@ const Template6 = () => {
               </div>
             </div>
           </a>
- 
+
           {/* Repeat for the second card */}
           <a
             href="#"
@@ -131,7 +131,7 @@ const Template6 = () => {
                 </svg>
                 Run Shifts for one low price
               </li>
- 
+
               <li className="flex items-start">
                 <svg
                   className="mt-1 mr-2 h-5 text-teal-400"
@@ -143,7 +143,7 @@ const Template6 = () => {
                 </svg>
                 Run Shifts for one low price
               </li>
- 
+
               <li className="flex items-start">
                 <svg
                   className="mt-1 mr-2 h-5 text-teal-400"
@@ -155,7 +155,7 @@ const Template6 = () => {
                 </svg>
                 Run Shifts for one low price
               </li>
- 
+
               <li className="flex items-start">
                 <svg
                   className="mt-1 mr-2 h-5 text-teal-400"
@@ -188,5 +188,5 @@ const Template6 = () => {
     </section>
   );
 };
- 
+
 export default Template6;

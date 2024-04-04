@@ -16,6 +16,10 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { auth } from "../config/firebase";
 import ReactDOMServer from "react-dom/server";
+import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+// import { update } from "../../../backend/src/controllers/template.controller";
 
 const CreateWidget = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -49,90 +53,135 @@ const CreateWidget = () => {
 
   const handleCloseModal = () => setOpen(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitted Pricing:", paymentOptions);
 
-    console.log("Success URL:", successUrl);
-    console.log("Failure URL:", failureUrl);
-
-    // Get email of the user, firebase
+    // Get email of the user from Firebase Auth
     const user = auth.currentUser;
-    if (user) {
-      console.log("User email:", user.email);
+    if (!user) {
+      console.error("No user logged in");
+      return;
     }
 
-    // Log image URL
-    console.log("Image URL:", imageUrl);
-
-    const selectedCurrency = currency;
-    console.log("Selected currency:", selectedCurrency);
-
-    console.log("=======================");
-
-    // Prepare json array [{label: "Basic plan", price:10, currency:"usd"}, {label: "Pro plan", price:20, currency:"usd"]
     const pricingData = paymentOptions.map((option) => ({
       label: option.label,
       price: option.value,
-      currency: selectedCurrency,
+      currency: currency,
     }));
 
-    console.log("Pricing data:", pricingData);
+    try {
+      // Sending pricing data to your server
+      const buttonIdsResponse = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}/api/buttons`,
+        {
+          buttons: pricingData,
+        }
+      );
 
-    // Convert menuBar to html and log it
-    const htmlString = ReactDOMServer.renderToString(menuBar);
-    console.log(htmlString);
-    return;
+      let buttonsData = buttonIdsResponse.data;
+      buttonsData = buttonsData.button_ids;
+      // console.log(buttonsData["Basic Plan"]);
+      // return;
+      // console.log("Button IDs:", buttonsData.button_ids);
 
-    // Make a post request and send this json array
-    // Below is the request
-    const button_ids_json = fetch(
-      `${process.env.REACT_APP_BASE_URL}/api/pricing`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          paymentButtonData: pricingData,
-        }),
-      }
-    );
+      // Processing buttonsData to attach new IDs to buttons
+      document.querySelectorAll("[data-payment-btn]").forEach((btn, index) => {
+        // Get the button's label
+        const buttonLabel = btn.getAttribute("data-payment-btn");
+        btn.setAttribute("data-payment-id", buttonsData[buttonLabel]);
+      });
 
-    const buttonsData = button_ids_json.json();
+      // Constructing updatedTemplateCode with the necessary HTML structure
+      let updatedTemplateCode = contentRef.current.innerHTML;
+      updatedTemplateCode = updatedTemplateCode.replace(
+        /className=/g,
+        "class="
+      );
 
-    // buttonsData is like [label:id, label:id, label:id]. I want to attach this new id as a data attribute to the button
-    // Loop through the buttons and attach the id
-    const paymentBtns = document.querySelectorAll("[data-payment-btn]");
-    paymentBtns.forEach((btn, index) => {
-      btn.setAttribute("data-payment-id", buttonsData[index]);
-    });
+      // HTML boilerplate with your updatedTemplateCode included
+      updatedTemplateCode = `
+      <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <script src="https://cdn.tailwindcss.com"></script>
+          </head>
+          <body>
+            ${updatedTemplateCode}
+            <script>
+              const paymentBtns = document.querySelectorAll('[data-payment-btn]')
+              paymentBtns.forEach((btn) => {
+                btn.addEventListener('click', async (e) => {
+                  e.preventDefault()
+                  const paymentId = btn.getAttribute('data-payment-id')
+                  createCheckoutSession(paymentId)
+                    .then((data) => {
+                      console.log(data.url)
+                      window.location.href = data.url; 
+                    })
+                    .catch((error) => {
+                      console.error(error) 
+                    })
+                })
+              })
 
-    // Get updated code of the template, wrap html boilerplate around it and save it in the database
-    let updatedTemplateCode = contentRef.current.innerHTML;
+              async function createCheckoutSession(paymentId) {
+                try {
+                  const response = await fetch(
+                    '${process.env.REACT_APP_BACKEND_EXPOSED_URL}',
+                    {
+                      method: 'POST', 
+                      headers: {
+                        'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify({ items: [{ id: paymentId }] }) 
+                    }
+                  )
 
-    // Change all the className to class
-    updatedTemplateCode = updatedTemplateCode.replace(/className=/g, "class=");
+                  if (!response.ok) {
+                    console.log('Failed to create checkout session:', response);
+                  }
 
-    // Add the template code here...
+                  const data = await response.json() 
+                  return data 
+                } catch (error) {
+                  console.error('Failed to create checkout session:', error)
+                }
+              }
+            </script>
+          </body>
+        </html>
 
-    // Save the widget in the database
-    const widgetData = fetch(`${process.env.REACT_APP_BASE_URL}/api/widgets`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: widgetName,
-        created_by: user.email,
-        code: updatedTemplateCode,
-        image_url: imageUrl,
-        success_url: successUrl,
-        failure_url: failureUrl,
+    `;
 
-        // Code of sidebar
-      }),
-    });
+      // Saving the widget with updated template code
+      const widgetDataResponse = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}/api/widgets`,
+        {
+          name: widgetName,
+          created_by: user.email,
+          code: updatedTemplateCode,
+          image_url: imageUrl,
+          success_url: successUrl,
+          failure_url: failureUrl,
+          payment_button_ids: buttonsData,
+          // Include any other data necessary for your widget
+        }
+      );
+
+      toast.success("Widget Created Successfully!");
+
+      // Wait for 2 seconds and redirect to /my-apps
+      setTimeout(() => {
+        window.location.href = `/my-apps`;
+      }, 2000);
+
+      console.log("Widget created with ID:", widgetDataResponse.data);
+    } catch (error) {
+      toast.error("Error creating widget. Please try again later.");
+      console.error("Error during form submission:", error);
+    }
 
     handleCloseModal();
   };
@@ -407,6 +456,7 @@ const CreateWidget = () => {
   return (
     <>
       <NavBar />
+      <ToastContainer />
       <div className="flex h-fit bg-[#F4F7F6]">
         {/* Background color adjusted to a modern palette */}
         <AnimatePresence>

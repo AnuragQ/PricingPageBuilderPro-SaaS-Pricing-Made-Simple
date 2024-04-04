@@ -1,6 +1,7 @@
 const Widget = require("../models/widget.model");
-const Widget = require("../models/widget.model");
 const Button_Model = require("../models/button.model");
+const { ObjectId } = require("mongoose").Types;
+const mongoose = require("mongoose");
 
 const { v4: uuidv4 } = require("uuid");
 // model has below fields
@@ -19,6 +20,7 @@ const { v4: uuidv4 } = require("uuid");
 
 // Create and Save a new Widget
 async function create(req, res) {
+  //   console.log(req.body.payment_button_ids);
   // Validate request
   if (!req.body.name) {
     return res.status(400).send({
@@ -35,7 +37,7 @@ async function create(req, res) {
   // Create a Widget
   const widget = new Widget({
     // widget id is auto generated uuid
-    widget_id: req.body.widget_id || uuidv4(),
+    widget_id: req.body.widget_id || "",
     name: req.body.name,
     created_by: req.body.created_by,
     created_at: req.body.created_at || Date.now(),
@@ -52,17 +54,46 @@ async function create(req, res) {
   });
 
   // Save Widget in the database
-  widget
-    .save()
-    .then((data) => {
-      res.send(data);
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message:
-          err.message || "Some error occurred while creating the Widget.",
-      });
+  // Save Widget in the database
+  try {
+    // console.log("Saving widget");
+
+    const savedWidget = await widget.save();
+
+    // console.log("Saved success");
+
+    // Get id of the widget and update the payment_button_ids
+    const widget_id = savedWidget._id;
+
+    // Use foreach loop
+
+    // Convert json to array
+    const btnsArr = Object.keys(req.body.payment_button_ids).map((key) => {
+      return req.body.payment_button_ids[key];
     });
+
+    // console.log(btnsArr);
+    // Loop through the payment_button_ids and update the widget_id
+    for (let i = 0; i < btnsArr.length; i++) {
+      console.log(btnsArr[i]);
+      // Convert the string hex string
+      const hexString = btnsArr[i];
+      console.log("Processing Hex String: ", hexString);
+
+      // Find the button with the field named button_id and update the widget_id
+      await Button_Model.findOneAndUpdate(
+        { button_id: hexString }, // Use button_id to find the document
+        { widget_id: widget_id },
+        { new: true }
+      );
+    }
+    res.send(savedWidget);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({
+      message: err.message || "Some error occurred while creating the Widget.",
+    });
+  }
 }
 
 // Retrieve and return all widgets of a particular user emain from the database.
@@ -72,18 +103,18 @@ async function findAllOfUser(req, res) {
       data_to_send = [];
       for (let i = 0; i < widgets.length; i++) {
         data_to_send.push({
-          widget_id: widgets[i].widget_id,
+          widget_id: widgets[i]._id,
           name: widgets[i].name,
-          created_by: widgets[i].created_by,
+          //   created_by: widgets[i].created_by,
           // created_at: widgets[i].created_at,
-          // updated_at: widgets[i].updated_at,
+          updated_at: widgets[i].updated_at,
           // payment_button_ids: widgets[i].payment_button_ids,
           // code: widgets[i].code,
           // menubar: widgets[i].menubar,
           // success_url: widgets[i].success_url,
           // failure_url: widgets[i].failure_url,
           image_url: widgets[i].image_url,
-          deployment_url: widgets[i].deployment_url,
+          //   deployment_url: widgets[i].deployment_url,
         });
       }
       res.send(data_to_send);
@@ -97,6 +128,7 @@ async function findAllOfUser(req, res) {
 
 // Find a single widget with a widgetId
 async function findOne(req, res) {
+  console.log("Finding widget with id: ");
   Widget.findById(req.params.widgetId)
     .then((widget) => {
       if (!widget) {
@@ -104,6 +136,7 @@ async function findOne(req, res) {
           message: "Widget not found with id " + req.params.widgetId,
         });
       }
+      console.log(widget);
       res.send(widget);
     })
     .catch((err) => {

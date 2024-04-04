@@ -7,10 +7,11 @@ const widget = require("../controllers/widget.controller.js");
 router.post("/", widget.create);
 
 // Retrieve all Widgets of a user by email
+router.get("/findOne/:widgetId", widget.findOne);
+
 router.get("/:email", widget.findAllOfUser);
 
 // Retrieve a single Widget with widgetId
-router.get("/:widgetId", widget.findOne);
 
 // Update a Widget with widgetId
 router.post("/:widgetId", widget.update);

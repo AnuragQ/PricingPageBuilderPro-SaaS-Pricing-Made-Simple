@@ -17,11 +17,10 @@ const mongoose = require("mongoose");
 
 //     },..]
 
-
 const widgetSchema = new mongoose.Schema({
   widget_id: {
     type: String,
-    required: true,
+    // required: true,
   },
   name: {
     type: String,

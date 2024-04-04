@@ -52,7 +52,7 @@ const Template1 = () => {
   };
 
   return (
-    <div className="container mx-auto antialiased text-gray-900 bg-white">
+    <div className="container mx-auto antialiased text-gray-900 bg-white w-full">
       <main className="mx-4 my-16">
         <div className="text-center">
           <h1 className="mb-4 text-2xl font-normal md:text-3xl lg:text-4xl">
