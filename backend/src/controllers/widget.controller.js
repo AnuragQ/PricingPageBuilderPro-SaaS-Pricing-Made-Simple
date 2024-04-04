@@ -249,7 +249,7 @@ function createZipWithHTML(htmlString) {
 
 async function deploy(req, res) {
   try {
-    const widget = await Widget.findOne({ widget_id: req.params.widgetId });
+    const widget = await Widget.findOne({ _id: req.params.widgetId });
     const code = widget.code;
     const netlifyClient = new NetlifyAPI(process.env.NETLIFY_ACCESS_TOKEN);
     let site_id = widget.site_id;
