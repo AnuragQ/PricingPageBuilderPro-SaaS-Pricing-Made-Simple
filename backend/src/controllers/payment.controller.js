@@ -7,7 +7,7 @@ const user_model = require("../models/user.model");
 const button_model = require("../models/button.model");
 const widget_model = require("../models/widget.model");
 
-// Create and Save a new User
+// C reate and Save a new User
 async function createCheckoutSession(req, res) {
   try {
     // get user details using email passed in the request

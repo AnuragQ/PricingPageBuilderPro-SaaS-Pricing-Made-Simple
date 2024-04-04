@@ -8,7 +8,7 @@ async function create(req, res) {
       message: "User email cannot be empty",
     });
   }
-
+  //
   // Create a User
   const user = new User({
     email: req.body.email,

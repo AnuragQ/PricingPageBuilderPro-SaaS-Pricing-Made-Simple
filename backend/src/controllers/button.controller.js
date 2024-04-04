@@ -5,7 +5,7 @@ const Button = require("../models/button.model");
 // currency: string
 const { v4: uuidv4 } = require("uuid");
 
-// create and save multiple buttons passed as an array in the request body
+// cr eate and save multiple buttons passed as an array in the request body
 async function create(req, res) {
   // Validate request
   if (!req.body.buttons) {
@@ -32,7 +32,7 @@ async function create(req, res) {
   }
   // create and save multiple buttons and return button_ids as an array in response
   try {
-    const buttonIds ={}
+    const buttonIds = {};
     for (const buttonData of req.body.buttons) {
       const button = new Button({
         button_id: uuidv4(),
@@ -46,7 +46,8 @@ async function create(req, res) {
     res.status(201).send({ button_ids: buttonIds });
   } catch (error) {
     res.status(500).send({
-      message: error.message || "Some error occurred while creating the Buttons.",
+      message:
+        error.message || "Some error occurred while creating the Buttons.",
     });
   }
 }
@@ -89,8 +90,7 @@ async function updateOne(req, res) {
     toUpdate.widget_id = req.body.widget_id;
   }
 
-  Button.findOneAndUpdate(req.params.button_id, toUpdate,
-    { new: true })
+  Button.findOneAndUpdate(req.params.button_id, toUpdate, { new: true })
     .then((button) => {
       if (!button) {
         return res.status(404).send({

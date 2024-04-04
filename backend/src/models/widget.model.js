@@ -57,7 +57,7 @@ const widgetSchema = new mongoose.Schema({
   failure_url: {
     type: String,
     default: "#",
-  },
+  }, //
   image_url: {
     type: String,
     default: "",

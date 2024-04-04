@@ -1,30 +1,30 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-    // label: string
-    // price: number
-    // currency: string
+// label: string
+// price: number
+// currency: string
 
 const buttonSchema = new mongoose.Schema({
-    button_id: {
-        type: String,
-        required: true
-    },
-    label: {
-        type: String,
-        required: true
-    },
-    price: {
-        type: String,
-        required: true
-    },
-    currency: {
-        type: String,
-        required: true
-    },
-    widget_id: {
-        type: String,
-        default: ""
-    }
+  button_id: {
+    type: String,
+    required: true,
+  },
+  label: {
+    type: String,
+    required: true,
+  },
+  price: {
+    type: String,
+    required: true,
+  },
+  currency: {
+    type: String,
+    required: true,
+  },
+  widget_id: {
+    type: String,
+    default: "",
+  },
 });
 
-module.exports = mongoose.model('Button', buttonSchema);
+module.exports = mongoose.model("Button", buttonSchema);
