@@ -67,7 +67,7 @@ const Navbar = () => {
               Profile
             </motion.a>
             <motion.a
-              href="/ "
+              href="/my-apps"
               className="text-gray-800"
               variants={navLinkVariants}
               whileHover="hover"

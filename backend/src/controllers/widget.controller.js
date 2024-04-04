@@ -9,6 +9,7 @@ const archiver = require("archiver");
 const NetlifyAPI = require("netlify");
 //
 const { v4: uuidv4 } = require("uuid");
+const Widget = require("../models/widget.model");
 // model has below fields
 // - name
 // - widget_id
