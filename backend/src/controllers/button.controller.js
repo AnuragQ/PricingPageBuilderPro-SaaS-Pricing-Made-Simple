@@ -54,7 +54,7 @@ async function create(req, res) {
 
 // Retrieve and return button from database using button_id
 async function findOne(req, res) {
-  Button.findById(req.params.button_id)
+  Button.findOne({ button_id: req.params.button_id })
     .then((button) => {
       if (!button) {
         return res.status(404).send({

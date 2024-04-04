@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Navbar from "../components/NavBar";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Profile = () => {
   const [stripeApiKey, setStripeApiKey] = useState(
-    "sk_test_YourTestStripeAPIKeyHere"
+    "sk_test_51P0UatRrD0UG6av9pbzsq6iiTJappeJUl83AAHiO8TY7sBxYC9wMEm08zDfLAZRhMC3dhZw6iqRzJ7hYurygc32000cza3HJf4"
   );
   const [isEditing, setIsEditing] = useState(false);
 
@@ -37,6 +39,16 @@ const Profile = () => {
     // Add more dummy data as needed
   ];
 
+  const handleBtnClick = (e) => {
+    e.preventDefault();
+    if (isEditing) {
+      saveStripeApiKey();
+      toast.success("Stripe API Key saved successfully!");
+    } else {
+      setIsEditing(true);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar />
@@ -47,12 +59,13 @@ const Profile = () => {
         animate={{ opacity: 1, transition: { duration: 0.5 } }}
       >
         <div className="mb-10">
+          <ToastContainer />
           <h2 className="text-2xl font-bold mb-4">Basic Details</h2>
           <div className="bg-white shadow rounded-lg p-6">
             <div>
-              <strong>Email:</strong> user@example.com
+              <strong>Email: &nbsp;</strong> akshatnehra7@gmail.com
             </div>
-            <div className="mt-4 flex">
+            <div className="mt-4 flex items-center">
               <strong>Stripe API Key:</strong>
               {isEditing ? (
                 <input
@@ -63,13 +76,11 @@ const Profile = () => {
                 />
               ) : (
                 <span className="ml-2">
-                  {stripeApiKey.replace(/.(?=.{4})/g, "*")}
+                  {stripeApiKey.substring(0, 35).replace(/.(?=.{4})/g, "*")}
                 </span>
               )}
               <button
-                onClick={() =>
-                  isEditing ? saveStripeApiKey() : setIsEditing(true)
-                }
+                onClick={(e) => handleBtnClick(e)}
                 className="ml-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded"
               >
                 {isEditing ? "Save" : "Edit"}

@@ -58,6 +58,7 @@ async function create(req, res) {
     image_url: req.body.image_url || "",
     deployment_url: req.body.deployment_url || "",
     site_id: req.body.site_id || "",
+    currency: req.body.currency || "usd",
   });
 
   // Save Widget in the database

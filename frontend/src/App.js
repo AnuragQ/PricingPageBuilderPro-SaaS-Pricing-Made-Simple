@@ -28,6 +28,7 @@ const ChooseTemplate = lazy(() => import("./routes/ChooseTemplate"));
 const MyApps = lazy(() => import("./routes/MyApps"));
 const CreateTemplate = lazy(() => import("./routes/CreateTemplate"));
 const Profile = lazy(() => import("./routes/Profile"));
+const EditWidget = lazy(() => import("./routes/EditWidget"));
 // templates
 const Template1 = lazy(() => import("./templates/Template1"));
 const Template2 = lazy(() => import("./templates/Template2"));
@@ -71,6 +72,14 @@ const App = () => {
               element={
                 <ProtectedRoute>
                   <CreateWidget />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/edit-widget"
+              element={
+                <ProtectedRoute>
+                  <EditWidget />
                 </ProtectedRoute>
               }
             />

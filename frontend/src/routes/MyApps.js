@@ -6,11 +6,13 @@ import { auth } from "../config/firebase";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
 const UserAppsPage = () => {
   const [showShareOptions, setShowShareOptions] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [userApps, setUserApps] = useState([]);
+  const [deploymentStatus, setDeploymentStatus] = useState(false);
 
   // Get current user's email
   const userEmail = auth.currentUser.email;
@@ -58,10 +60,31 @@ const UserAppsPage = () => {
     }
   };
 
-  const handleEditClick = (appId) => {};
+  const handleEditClick = (appId) => {
+    navigate(`/edit-widget?widgetId=${appId}`);
+  };
 
   const handleShareableLink = (appId) => {
-    copyToClipboard("", "URL copied to clipboard!");
+    setDeploymentStatus(true);
+
+    // Add a delay of 2 seconds to simulate deployment
+    setTimeout(() => {
+      console.log("App ID:", appId);
+      // Get the code for the selected app via api call
+      axios
+        .get(`${process.env.REACT_APP_BASE_URL}/api/widgets/findOne/${appId}`)
+        .then((response) => {
+          copyToClipboard(
+            response.data.deployment_url,
+            "URL copied to clipboard!"
+          );
+          setDeploymentStatus(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching user apps:", error);
+          setDeploymentStatus(false);
+        });
+    }, 10000);
   };
 
   const handleGetCode = (appId) => {
@@ -77,11 +100,21 @@ const UserAppsPage = () => {
       });
   };
 
+  let navigate = useNavigate();
+
   return (
     <>
+      {deploymentStatus && (
+        <div class="flex flex-col justify-center items-center h-screen fixed w-screen z-50 bg-[#f0f2f5]">
+          <div class="rounded-full h-20 w-20 bg-violet-800 animate-ping"></div>
+          <h1 className="mt-20 text-xl font-bold">
+            Please wait while we are deploying your Pricing Page...
+          </h1>
+        </div>
+      )}
       <NavBar />
       <div
-        className="px-8 py-4 min-h-screen flex justify-center"
+        className="px-8 py-4 pb-20 min-h-screen flex justify-center"
         style={{ backgroundColor: "#f0f2f5" }}
       >
         <ToastContainer />
@@ -128,6 +161,7 @@ const UserAppsPage = () => {
                   <FaEdit
                     className="text-blue-600 hover:text-blue-700 cursor-pointer"
                     size={24}
+                    onClick={() => handleEditClick(app.widget_id)}
                   />
                   <FaShareAlt
                     className="text-green-600 hover:text-green-700 cursor-pointer"
