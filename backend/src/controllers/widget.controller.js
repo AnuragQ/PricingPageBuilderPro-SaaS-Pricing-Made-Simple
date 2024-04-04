@@ -8,7 +8,7 @@ const fs = require("fs");
 const NetlifyAPI = require("netlify");
 const JSZip = require("jszip");
 const archiver = require("archiver");
-const path = require("path");
+const path = require("path");//
 const { v4: uuidv4 } = require("uuid");
 // model has below fields
 // - name
