@@ -27,21 +27,23 @@ const Profile = () => {
     if (currentUser) {
       fetchUserDetails(); // Call fetchUserDetails if currentUser is available
     }
-  });
+  },);
 
   return (
     <>
       <NavBar />
-      <div className="flex items-center justify-between mb-4 container">
-        <div>
-          <h2>Anurag Sharma</h2>
-          <p>Email: anurags153@gmail.com</p>
-          <p>Partial Stripe Key: sk-************************</p>
-          <Link to="/edit-profile" className="text-blue-500">
-            <FaEdit /> Edit Profile
-          </Link>
-          {/* Add more user details and edit profile functionality */}
-        </div>
+      <div className="flex items-center justify-between mb-4">
+        {userDetails && ( // Render user details if userDetails is available
+          <div>
+            <h2>{userDetails.username}</h2>
+            <p>Email: {userDetails.email}</p>
+            <p>Partial Stripe Key: {userDetails.stripe_key}</p>
+            <Link to="/edit-profile" className="text-blue-500">
+              <FaEdit /> Edit Profile
+            </Link>
+            {/* Add more user details and edit profile functionality */}
+          </div>
+        )}
       </div>
     </>
   );

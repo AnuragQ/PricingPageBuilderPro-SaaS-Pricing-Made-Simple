@@ -17,60 +17,58 @@ const mongoose = require("mongoose");
 
 //     },..]
 
-
 const widgetSchema = new mongoose.Schema({
   widget_id: {
     type: String,
-    required: true,
+    required: true
   },
   name: {
     type: String,
-    required: true,
+    required: true
   },
   created_by: {
     type: String,
-    required: true,
+    required: true
   },
   created_at: {
     type: Date,
-    default: Date.now,
+    default: Date.now
   },
   updated_at: {
     type: Date,
-    default: Date.now,
+    default: Date.now
   },
   payment_button_ids: {
     type: Object,
-    default: {},
+    default: {}
   },
   code: {
     type: String,
-    default: "",
+    default: ""
   },
   menubar: {
     type: String,
-    default: "",
+    default: ""
   },
   success_url: {
     type: String,
-    default: "#",
+    default: "#"
   },
   failure_url: {
     type: String,
-    default: "#",
+    default: "#"
   },
   image_url: {
     type: String,
-    default: "",
+    default: ""
   },
   deployment_url: {
     type: String,
-    default: "",
+    default: ""
   },
   site_id: {
     type: String,
-    default: "",
-  },
+    default: ""
+  }
 });
-
 module.exports = mongoose.model("Widget", widgetSchema);

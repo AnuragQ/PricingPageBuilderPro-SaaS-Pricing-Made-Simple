@@ -59,7 +59,7 @@ const Navbar = () => {
         <div className="space-x-4 flex">
           <div className="flex justify-center items-center space-x-10 mr-5">
             <motion.a
-              href="#"
+              href="/profile"
               className="text-gray-800"
               variants={navLinkVariants}
               whileHover="hover"
@@ -67,7 +67,7 @@ const Navbar = () => {
               Profile
             </motion.a>
             <motion.a
-              href="/my-apps"
+              href="/ "
               className="text-gray-800"
               variants={navLinkVariants}
               whileHover="hover"

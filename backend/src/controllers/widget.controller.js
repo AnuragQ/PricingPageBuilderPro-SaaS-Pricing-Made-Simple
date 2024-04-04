@@ -1,6 +1,11 @@
+// load .env variables
+require("dotenv").config();
 const Widget = require("../models/widget.model");
-const Widget = require("../models/widget.model");
+// const Widget = require("../models/widget.model");
 const Button_Model = require("../models/button.model");
+const fs = require("fs");
+const archiver = require("archiver");
+const NetlifyAPI = require("netlify");
 
 const { v4: uuidv4 } = require("uuid");
 // model has below fields
@@ -49,6 +54,7 @@ async function create(req, res) {
     failure_url: req.body.failure_url || "",
     image_url: req.body.image_url || "",
     deployment_url: req.body.deployment_url || "",
+    site_id: req.body.site_id || "",
   });
 
   // Save Widget in the database
@@ -174,6 +180,60 @@ async function remove(req, res) {
       });
     });
 }
+async function deploy(req, res) {
+  try {
+    const widget = await Widget.findOne({ widget_id: req.params.widgetId });
+    const code = widget.code;
+    const netlifyClient = new NetlifyAPI(process.env.NETLIFY_ACCESS_TOKEN);
+    let site_id = widget.site_id;
+
+    if (!site_id) {
+      const site_name = widget.name || "widget";
+      const site = await netlifyClient.createSite({
+        body: {
+          name: site_name + "-" + uuidv4(),
+        },
+      });
+      site_id = site.id;
+    }
+
+    const output = fs.createWriteStream(__dirname + "/widget.zip");
+    const archive = archiver("zip", {
+      zlib: { level: 9 },
+    });
+
+    output.on("close", () => {
+        // sleep for 5 seconds to allow the zip file to be written
+        setTimeout(() => {
+          console.log(archive.pointer() + " total bytes");
+          console.log("archiver has been finalized and the output file descriptor has closed.");
+        }, 5000);
+      netlifyClient
+        .deploy(site_id, __dirname + "/widget.zip")
+        .then((deploy) => {
+          widget.deployment_url = deploy.deploy.url;
+          widget.site_id = site_id;
+          widget.save();
+          res.send({ message: "Widget deployed successfully!" });
+        })
+        .catch((err) => {
+          console.error(err);
+          res.status(500).send({
+            message: "Could not deploy widget with id " + req.params.widgetId,
+          });
+        });
+    });
+
+    archive.pipe(output);
+    archive.append(code, { name: "index.html" });
+    archive.finalize();
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .send({ message: "An error occurred while deploying widget." });
+  }
+}
 
 module.exports = {
   create,
@@ -181,4 +241,5 @@ module.exports = {
   findOne,
   update,
   remove,
+  deploy,
 };
