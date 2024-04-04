@@ -8,7 +8,7 @@ const fs = require("fs");
 const NetlifyAPI = require("netlify");
 const JSZip = require("jszip");
 const archiver = require("archiver");
-const path = require("path");//
+const path = require("path"); //
 const { v4: uuidv4 } = require("uuid");
 // model has below fields
 // - name
@@ -262,24 +262,39 @@ async function deploy(req, res) {
       });
       site_id = site.id;
     }
-
     createZipWithHTML(code);
-    try {
-      const deploy = await netlifyClient.deploy(
-        site_id,
-        "/Users/anuragsharma/Main/code/univ/IP/PricingPageBuilderPro-SaaS-Pricing-Made-Simple/backend/source.zip"
-      );
-      console.log(deploy);
-      await Widget.findOneAndUpdate(
-        { widget_id: req.params.widgetId },
-        { deployment_url: deploy.deploy_url, site_id: site_id }
-      );
-    } catch (err) {
-      console.error(err);
-      res
-        .status(500)
-        .send({ message: "An error occurred while deploying widget." });
-    }
+
+    // run cli command netlify deploy --dir=source --site=$site_id using child_process
+    const { exec } = require("child_process");
+    console.log("site_id", site_id);
+    exec(
+      `netlify deploy --dir=source --site=${site_id} --prod`,
+      (error, stdout, stderr) => {
+        if (error) {
+          console.error(`exec error: ${error}`);
+          return;
+        }
+        // display stdout line by line and print the line containing "Website URL"
+        const lines = stdout.split("\n");
+        let deployment_url = "";
+        for (const line of lines) {
+          console.log(line);
+          if (line.includes("Website URL")) {
+            deployment_url = line.split(": ")[1];
+            console.log("deployment_url==========================", deployment_url);
+            break;
+          }
+        }
+        // update the widget with the deployment url
+        widget.deployment_url = deployment_url;
+        widget.site_id = site_id;
+        widget.save();
+        res.send({ deployment_url });
+        
+        console.log("deployment_url", deployment_url.split(" ")[1]);
+        console.error(`stderr: ${stderr}`);
+      }
+    );
   } catch (err) {
     console.error(err);
     res
