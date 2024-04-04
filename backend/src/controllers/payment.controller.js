@@ -18,8 +18,13 @@ async function createCheckoutSession(req, res) {
     );
     // const widget_id = req.body.widget_id;
     // get success and failure urls from the widget using widget_id
-    let widget_id= req.body.items[0]['widget_id'];
-    const widget = await widget_model.findOne({ widget_id: widget_id });
+    console.log("req.body.items", req.body.items);
+    let button_id = req.body.items[0]["id"];
+    console.log("button_id", button_id);
+    // fetch the button details using button_id
+    const button = await button_model.findOne({ button_id: button_id });
+    console.log("button", button);
+    const widget = await widget_model.findOne({ _id: button.widget_id });
     const sessionItems = await Promise.all(
       req.body.items.map(async (item) => {
         const plan = await button_model.findOne({ button_id: item.id });
@@ -29,7 +34,7 @@ async function createCheckoutSession(req, res) {
             product_data: {
               name: plan.label,
             },
-            unit_amount: plan.price*100,
+            unit_amount: plan.price * 100,
           },
           quantity: 1,
         };
@@ -45,6 +50,7 @@ async function createCheckoutSession(req, res) {
     });
     res.json({ url: session.url });
   } catch (e) {
+    console.log(e);
     res.status(500).json({ error: e.message });
   }
 }
