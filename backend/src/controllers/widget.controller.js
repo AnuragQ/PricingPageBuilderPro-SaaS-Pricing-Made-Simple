@@ -248,6 +248,7 @@ function createZipWithHTML(htmlString) {
 }
 
 async function deploy(req, res) {
+  console.log("Deploying widget with id: ", req.params.widgetId);
   try {
     const widget = await Widget.findOne({ _id: req.params.widgetId });
     const code = widget.code;
@@ -282,7 +283,10 @@ async function deploy(req, res) {
           console.log(line);
           if (line.includes("Website URL")) {
             deployment_url = line.split(": ")[1];
-            console.log("deployment_url==========================", deployment_url);
+            console.log(
+              "deployment_url==========================",
+              deployment_url
+            );
             break;
           }
         }
@@ -291,7 +295,7 @@ async function deploy(req, res) {
         widget.site_id = site_id;
         widget.save();
         res.send({ deployment_url });
-        
+
         console.log("deployment_url", deployment_url.split(" ")[1]);
         console.error(`stderr: ${stderr}`);
       }

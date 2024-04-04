@@ -72,12 +72,13 @@ const UserAppsPage = () => {
       console.log("App ID:", appId);
       // Get the code for the selected app via api call
       axios
-        .get(`${process.env.REACT_APP_BASE_URL}/api/widgets/findOne/${appId}`)
+        .post(`${process.env.REACT_APP_BASE_URL}/api/widgets/deploy/${appId}`)
         .then((response) => {
           copyToClipboard(
             response.data.deployment_url,
             "URL copied to clipboard!"
           );
+          
           setDeploymentStatus(false);
         })
         .catch((error) => {
