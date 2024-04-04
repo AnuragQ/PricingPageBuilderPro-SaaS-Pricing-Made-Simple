@@ -70,6 +70,10 @@ const widgetSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
+  currency: {
+    type: String,
+    default: "usd",
+  },
 });
 
 module.exports = mongoose.model("Widget", widgetSchema);

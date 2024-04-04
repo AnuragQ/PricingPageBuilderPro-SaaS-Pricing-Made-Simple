@@ -6,6 +6,7 @@ import { auth } from "../config/firebase";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
 const UserAppsPage = () => {
   const [showShareOptions, setShowShareOptions] = useState(null);
@@ -58,7 +59,9 @@ const UserAppsPage = () => {
     }
   };
 
-  const handleEditClick = (appId) => {};
+  const handleEditClick = (appId) => {
+    navigate(`/edit-widget?widgetId=${appId}`);
+  };
 
   const handleShareableLink = (appId) => {
     copyToClipboard("", "URL copied to clipboard!");
@@ -76,6 +79,8 @@ const UserAppsPage = () => {
         console.error("Error fetching user apps:", error);
       });
   };
+
+  let navigate = useNavigate();
 
   return (
     <>
@@ -128,6 +133,7 @@ const UserAppsPage = () => {
                   <FaEdit
                     className="text-blue-600 hover:text-blue-700 cursor-pointer"
                     size={24}
+                    onClick={() => handleEditClick(app.widget_id)}
                   />
                   <FaShareAlt
                     className="text-green-600 hover:text-green-700 cursor-pointer"

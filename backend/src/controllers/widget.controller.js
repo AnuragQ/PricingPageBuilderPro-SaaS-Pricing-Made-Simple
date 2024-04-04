@@ -8,9 +8,8 @@ const fs = require("fs");
 const NetlifyAPI = require("netlify");
 const JSZip = require("jszip");
 const archiver = require("archiver");
-const path = require("path");//
+const path = require("path"); //
 const { v4: uuidv4 } = require("uuid");
-const Widget = require("../models/widget.model");
 // model has below fields
 // - name
 // - widget_id
@@ -59,6 +58,7 @@ async function create(req, res) {
     image_url: req.body.image_url || "",
     deployment_url: req.body.deployment_url || "",
     site_id: req.body.site_id || "",
+    currency: req.body.currency || "usd",
   });
 
   // Save Widget in the database
