@@ -6,7 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 const Profile = () => {
   const [stripeApiKey, setStripeApiKey] = useState(
-    "sk_test_YourTestStripeAPIKeyHere"
+    "sk_test_51P0UatRrD0UG6av9pbzsq6iiTJappeJUl83AAHiO8TY7sBxYC9wMEm08zDfLAZRhMC3dhZw6iqRzJ7hYurygc32000cza3HJf4"
   );
   const [isEditing, setIsEditing] = useState(false);
 
@@ -63,7 +63,7 @@ const Profile = () => {
           <h2 className="text-2xl font-bold mb-4">Basic Details</h2>
           <div className="bg-white shadow rounded-lg p-6">
             <div>
-              <strong>Email: &nbsp;</strong> user@example.com
+              <strong>Email: &nbsp;</strong> akshatnehra7@gmail.com
             </div>
             <div className="mt-4 flex items-center">
               <strong>Stripe API Key:</strong>
@@ -76,7 +76,7 @@ const Profile = () => {
                 />
               ) : (
                 <span className="ml-2">
-                  {stripeApiKey.replace(/.(?=.{4})/g, "*")}
+                  {stripeApiKey.substring(0, 35).replace(/.(?=.{4})/g, "*")}
                 </span>
               )}
               <button

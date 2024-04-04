@@ -18,16 +18,7 @@ const Template1 = () => {
           </p>
         </div>
 
-        {/* Plan switch */}
-        {/* <div className="flex items-center justify-center mt-10 space-x-4">
-          <span className="text-base font-medium">Bill Monthly</span>
-          <div className="w-16 h-8 bg-indigo-500 rounded-full shadow-md"></div>
-          <span className="text-base font-medium">Bill Annually</span>
-        </div> */}
-
-        {/* Plans */}
         <div className="flex flex-col items-center justify-center mt-16 space-y-8 lg:flex-row lg:items-stretch lg:space-x-8 lg:space-y-0">
-          {/* Plan 1 */}
           <section className="flex flex-col w-full max-w-sm p-12 space-y-6 bg-white rounded-lg shadow-md">
             <div className="flex-shrink-0">
               <span className="text-4xl font-medium tracking-tight">$29</span>
@@ -82,7 +73,6 @@ const Template1 = () => {
             </div>
           </section>
 
-          {/* Plan 2 */}
           <section className="flex flex-col w-full max-w-sm p-12 space-y-6 bg-white rounded-lg shadow-md">
             <div className="flex-shrink-0">
               <span className="text-4xl font-medium tracking-tight">$59</span>
@@ -173,7 +163,6 @@ const Template1 = () => {
             </div>
           </section>
 
-          {/* Plan 3 */}
           <section className="flex flex-col w-full max-w-sm p-12 space-y-6 bg-white rounded-lg shadow-md">
             <div className="flex-shrink-0">
               <span className="text-4xl font-medium tracking-tight">$139</span>

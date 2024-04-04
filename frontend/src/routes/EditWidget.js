@@ -29,36 +29,42 @@ const EditWidget = () => {
   const [currencyList, setCurrencyList] = useState([]);
 
   const widgetId = new URLSearchParams(window.location.search).get("widgetId");
-
   const handleOpenModal = async () => {
     setOpen(true);
+
     // Simulate fetching labels for payment options
     const paymentBtns = document.querySelectorAll("[data-payment-btn]");
-    // Get all details of the payment buttons via get request
-    const paymentBtnDetails = Array.from(paymentBtns).map(async (btn) => {
-      const btnId = btn.getAttribute("data-payment-id");
-      console.log(btnId);
-      const btnDetails = await axios.get(
-        `http://localhost:3000/api/buttons/${btnId}`
-      );
-
-      console.log(btnDetails.data);
-
-      // Return object with value as the price and label as the label
-      const obj = {
-        label: btnDetails.data.label,
-        price: btnDetails.data.price,
-      };
-      return obj;
-    });
-
-    console.log(paymentBtnDetails);
-
     const options = Array.from(paymentBtns).map((btn) => ({
       label: btn.getAttribute("data-payment-btn"),
       value: "",
     }));
     setPaymentOptions(options);
+
+    // Introduce a short delay before fetching details
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // Get all details of the payment buttons via get request
+    try {
+      const promises = Array.from(paymentBtns).map(async (btn, index) => {
+        const btnId = btn.getAttribute("data-payment-id");
+        console.log(btnId);
+        const btnDetails = await axios.get(
+          `http://localhost:3000/api/buttons/${btnId}`
+        );
+
+        // Update the particular option inside the paymentOptions array
+        const updatedOptions = [...paymentOptions];
+        updatedOptions[index].value = btnDetails.data.price;
+        setPaymentOptions(updatedOptions);
+      });
+
+      await Promise.all(promises);
+    } catch (error) {
+      console.error("Error fetching payment button details:", error);
+      // Handle error gracefully
+      toast.error("Error fetching payment button details");
+      setOpen(false); // Close modal on error
+    }
   };
 
   const pricingData = paymentOptions.map((option) => ({
@@ -122,11 +128,15 @@ const EditWidget = () => {
     e.preventDefault();
     // Handle form submission
   };
-
   const handlePriceChange = (index, newValue) => {
-    const updatedOptions = [...paymentOptions];
-    updatedOptions[index].value = newValue;
-    setPaymentOptions(updatedOptions);
+    try {
+      // Deep copy of paymentOptions array
+      const updatedOptions = JSON.parse(JSON.stringify(paymentOptions));
+      if (updatedOptions[index]) {
+        updatedOptions[index].value = newValue;
+      }
+      setPaymentOptions(updatedOptions);
+    } catch (error) {}
   };
 
   const handleCurrencyChange = (event) => {
