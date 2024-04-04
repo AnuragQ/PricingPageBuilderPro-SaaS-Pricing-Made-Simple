@@ -64,28 +64,45 @@ const UserAppsPage = () => {
     navigate(`/edit-widget?widgetId=${appId}`);
   };
 
+  function extractUrl(text) {
+    // Regular expression to match URLs
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+    // Find all matches of URLs in the text
+    const matches = text.match(urlRegex);
+
+    // Return the first URL found, or null if no URL is found
+    if (matches) {
+      const url = matches[0];
+      // Remove unwanted part
+      const cleanUrl = url.replace(/(https?:\/\/)/, "");
+      return "https://" + cleanUrl;
+    } else {
+      return null;
+    }
+  }
+
   const handleShareableLink = (appId) => {
     setDeploymentStatus(true);
 
     // Add a delay of 2 seconds to simulate deployment
-    setTimeout(() => {
-      console.log("App ID:", appId);
-      // Get the code for the selected app via api call
-      axios
-        .post(`${process.env.REACT_APP_BASE_URL}/api/widgets/deploy/${appId}`)
-        .then((response) => {
-          copyToClipboard(
-            response.data.deployment_url,
-            "URL copied to clipboard!"
-          );
-          
-          setDeploymentStatus(false);
-        })
-        .catch((error) => {
-          console.error("Error fetching user apps:", error);
-          setDeploymentStatus(false);
-        });
-    }, 10000);
+    // setTimeout(() => {
+    console.log("App ID:", appId);
+    // Get the code for the selected app via api call
+    axios
+      .post(`${process.env.REACT_APP_BASE_URL}/api/widgets/deploy/${appId}`)
+      .then((response) => {
+        copyToClipboard(
+          extractUrl(response.data.deployment_url),
+          "URL copied to clipboard!"
+        );
+        setDeploymentStatus(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching user apps:", error);
+        setDeploymentStatus(false);
+      });
+    // }, 10000);
   };
 
   const handleGetCode = (appId) => {

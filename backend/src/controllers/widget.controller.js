@@ -252,11 +252,14 @@ async function deploy(req, res) {
   try {
     const widget = await Widget.findOne({ _id: req.params.widgetId });
     const code = widget.code;
+    console.log("access token", process.env.NETLIFY_ACCESS_TOKEN);
+    console.log(req.params.widgetId);
     const netlifyClient = new NetlifyAPI(process.env.NETLIFY_ACCESS_TOKEN);
     let site_id = widget.site_id;
 
     if (!site_id) {
       const site_name = widget.name || "widget";
+      console.log("site_name", site_name);
       const site = await netlifyClient.createSite({
         body: {
           name: site_name + "-" + uuidv4(),

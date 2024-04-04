@@ -184,10 +184,10 @@ const EditWidget = () => {
                 {/* Example: */}
                 <Accordion>
                   <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography>Accordion Title</Typography>
+                    <Typography>Editable Content</Typography>
                   </AccordionSummary>
                   <AccordionDetails>
-                    <Typography>Accordion Content</Typography>
+                    <Typography>Heading</Typography>
                   </AccordionDetails>
                 </Accordion>
 
