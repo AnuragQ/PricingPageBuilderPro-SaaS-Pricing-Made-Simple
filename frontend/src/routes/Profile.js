@@ -7,6 +7,8 @@ import { auth } from "../config/firebase";
 import axios from "axios";
 import Modal from "../components/Modal";
 import Cookies from "js-cookie";
+import dayjs from "dayjs";
+import currencies from "../resources/currencies";
 
 const Profile = () => {
   const [stripeApiKey, setStripeApiKey] = useState("");
@@ -18,7 +20,7 @@ const Profile = () => {
   const [showModal, setShowModal] = useState(false);
   const [hideSections, setHideSections] = useState(false);
   const [userIsPaid, setUserIsPaid] = useState(false);
-  const [userPaymentDetails, setUserPaymentDetails] = useState({});
+  const [userPaymentDetails, setUserPaymentDetails] = useState([]);
 
   useEffect(() => {
     const userEmail = auth.currentUser.email;
@@ -35,6 +37,26 @@ const Profile = () => {
 
     const url = process.env.REACT_APP_BACKEND_EXPOSED_URL;
     setBackendUrl(url);
+
+    // Get user payment details
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/api/users/${currentUser}`)
+      .then((response) => {
+        if (response.data.isPaid) {
+          setUserIsPaid(true);
+        }
+      });
+
+    // Get all the payment details of the user
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/api/payments/${currentUser}`)
+      .then((response) => {
+        console.log(response.data);
+        setUserPaymentDetails((prevPaymentDetails) => [
+          ...prevPaymentDetails,
+          ...response.data,
+        ]);
+      });
 
     const userPreference = Cookies.get("hideMenuBar");
     if (!userPreference) {
@@ -134,6 +156,9 @@ const Profile = () => {
           <div className="bg-white shadow rounded-lg p-6">
             <div>
               <strong>Email: &nbsp;</strong> {currentUser}
+            </div>
+            <div className="mt-4">
+              <strong>Plan: &nbsp;</strong> {userIsPaid ? "Premium" : "Free"}
             </div>
             <div className="mt-4 flex items-center">
               <strong>Stripe API Key:</strong>
@@ -249,25 +274,43 @@ const Profile = () => {
         {/* Past Payments Section Unchanged */}
         <div className="mb-10">
           <h2 className="text-2xl font-bold mb-4">Past Payments</h2>
-          <div className="bg-white shadow rounded-lg p-6">
-            <table className="w-full text-left">
+          <div className="bg-white shadow rounded-lg p-6 pl-12 overflow-x-auto">
+            <table className="table-auto w-full mx-auto">
               <thead>
-                <tr className="border-b">
-                  <th className="pb-2">Widget Name</th>
-                  <th className="pb-2">Date</th>
-                  <th className="pb-2">Amount</th>
-                  <th className="pb-2">Status</th>
+                <tr className="text-lg text-gray-500 text-left">
+                  <th className="pb-2 font-medium">Widget Name</th>
+                  <th className="pb-2 font-medium">User Email</th>
+                  <th className="pb-2 font-medium">Date</th>
+                  <th className="pb-2 font-medium">Amount</th>
+                  <th className="pb-2 font-medium">Status</th>
                 </tr>
               </thead>
               <tbody>
-                {/* Example Data; Populate from your state or props as needed */}
-                <tr className="border-b">
-                  <td className="py-2">Example Widget 1</td>
-                  <td>2024-01-01</td>
-                  <td>$50.00</td>
-                  <td>Completed</td>
-                </tr>
-                {/* Repeat for each payment record */}
+                {userPaymentDetails.map((payment, index) => (
+                  <tr className="text-sm" key={index}>
+                    <td className="py-2">{payment.widget_name}</td>
+                    <td>{payment.session.customer_details.email}</td>
+                    <td>
+                      {payment.session.created
+                        ? dayjs(
+                            parseInt(payment.session.created) * 1000
+                          ).format("DD MMM YYYY [at] h:mm A")
+                        : "N/A"}
+                    </td>
+                    <td>
+                      {/* Get symbol from currencies */}
+                      {payment.session.currency &&
+                        currencies[payment.session.currency.toUpperCase()]
+                          .symbol}{" "}
+                      {payment.session.amount_total}
+                    </td>
+                    <td>
+                      <span className="inline-block py-1 px-2 text-white bg-green-500 rounded-full">
+                        Completed
+                      </span>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

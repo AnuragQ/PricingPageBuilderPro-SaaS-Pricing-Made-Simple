@@ -124,7 +124,19 @@ async function findAll(req, res) {
     const user = await user_model.findOne({ email: req.params.email });
 
     // Find all payments of the user
-    var payments = await payment.find({ user_email: req.params.email });
+    var payments = await Payment.find({ user_email: req.params.email });
+
+    // Access widget details for each payment and add the name to the payment object
+    payments = await Promise.all(
+      payments.map(async (payment) => {
+        const widget = await widget_model.findOne({
+          widget_id: payment.widget_id,
+        });
+        payment = payment.toObject();
+        payment["widget_name"] = widget.name;
+        return payment;
+      })
+    );
     res.send(payments);
   } catch (error) {
     console.log(error);
