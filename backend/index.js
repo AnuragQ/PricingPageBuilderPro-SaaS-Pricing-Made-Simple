@@ -8,6 +8,12 @@ const paymentRoutes = require("./src/routes/payment.routes.js");
 const buttonRoutes = require("./src/routes/button.routes.js");
 const cors = require("cors");
 const { connectDatabse } = require("./src/services/db_connect.js");
+const payment = require("./src/controllers/payment.controller.js");
+app.use(
+  "/api/payments/webhook",
+  express.raw({ type: "application/json" }),
+  payment.webhook
+);
 app.use(cors());
 
 app.use(express.json());
