@@ -15,10 +15,11 @@ router.get("/:email", widget.findAllOfUser);
 // Retrieve a single Widget with widgetId
 
 // Deploy a Widget with widgetId using netlify
-// Update a Widget with widgetId
-router.post("/:widgetId", widget.update);
 
 // Delete a Widget with widgetId
-router.delete("/:widgetId", widget.remove);
+router.delete("/delete/:widgetId", widget.remove);
+
+// Update a Widget with widgetId
+router.post("/:widgetId", widget.update);
 
 module.exports = router;

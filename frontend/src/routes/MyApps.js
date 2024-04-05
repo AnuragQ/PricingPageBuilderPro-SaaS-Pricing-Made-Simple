@@ -1,16 +1,30 @@
 import React, { useState, useEffect } from "react";
 import NavBar from "../components/NavBar";
 import { motion } from "framer-motion";
-import { FaEdit, FaShareAlt, FaSearch, FaLink, FaCode } from "react-icons/fa";
+import {
+  FaEdit,
+  FaShareAlt,
+  FaSearch,
+  FaLink,
+  FaCode,
+  FaTrash,
+} from "react-icons/fa";
 import { auth } from "../config/firebase";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
+import PricingPopup from "../components/PricingPopup";
 
 const UserAppsPage = () => {
   const [showShareOptions, setShowShareOptions] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [userApps, setUserApps] = useState([]);
+  const [deploymentStatus, setDeploymentStatus] = useState(false);
+  const [userIsPaid, setUserIsPaid] = useState(false);
+  const [showPricingPopup, setShowPricingPopup] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [widgetIdToDelete, setWidgetIdToDelete] = useState(null);
 
   // Get current user's email
   const userEmail = auth.currentUser.email;
@@ -24,6 +38,14 @@ const UserAppsPage = () => {
       })
       .catch((error) => {
         console.error("Error fetching user apps:", error);
+      });
+
+    // Check if the user is a paid user
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/api/users/paid/${userEmail}`)
+      .then((response) => {
+        setUserIsPaid(response.data);
+        console.log("User is paid:", response.data);
       });
   }, [userEmail]);
 
@@ -58,13 +80,63 @@ const UserAppsPage = () => {
     }
   };
 
-  const handleEditClick = (appId) => {};
+  const handleEditClick = (appId) => {
+    navigate(`/edit-widget?widgetId=${appId}`);
+  };
+
+  function extractUrl(text) {
+    // Regular expression to match URLs
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+    // Find all matches of URLs in the text
+    const matches = text.match(urlRegex);
+
+    // Return the first URL found, or null if no URL is found
+    if (matches) {
+      const url = matches[0];
+      // Remove unwanted part
+      const cleanUrl = url.replace(/(https?:\/\/)/, "");
+      return "https://" + cleanUrl;
+    } else {
+      return null;
+    }
+  }
 
   const handleShareableLink = (appId) => {
-    copyToClipboard("", "URL copied to clipboard!");
+    if (!userIsPaid) {
+      setShowPricingPopup(true);
+      return;
+    }
+
+    setDeploymentStatus(true);
+
+    // Add a delay of 2 seconds to simulate deployment
+    setTimeout(() => {
+      console.log("App ID:asdasd", appId);
+      // Get the code for the selected app via api call
+      axios
+        .post(`${process.env.REACT_APP_BASE_URL}/api/widgets/deploy/${appId}`)
+        .then((response) => {
+          console.log("Response:", response.data);
+          copyToClipboard(
+            extractUrl(response.data.deployment_url),
+            "URL copied to clipboard!"
+          );
+          setDeploymentStatus(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching user apps:", error);
+          setDeploymentStatus(false);
+        });
+    }, 2000);
   };
 
   const handleGetCode = (appId) => {
+    if (!userIsPaid) {
+      setShowPricingPopup(true);
+      return;
+    }
+
     console.log("App ID:", appId);
     // Get the code for the selected app via api call
     axios
@@ -77,11 +149,76 @@ const UserAppsPage = () => {
       });
   };
 
+  const handleDeleteWidget = () => {
+    axios
+      .delete(
+        `${process.env.REACT_APP_BASE_URL}/api/widgets/delete/${widgetIdToDelete}`
+      )
+      .then((response) => {
+        console.log("Widget deleted:", response.data);
+        setUserApps(
+          userApps.filter((app) => app.widget_id !== widgetIdToDelete)
+        );
+        toast.success("Widget deleted successfully!");
+        setShowDeleteConfirmation(false); // Close the confirmation modal after deletion
+      })
+      .catch((error) => {
+        console.error("Error deleting widget:", error);
+        toast.error("Failed to delete widget. Please try again later.");
+        setShowDeleteConfirmation(false); // Close the confirmation modal if deletion fails
+      });
+  };
+
+  const handleDeleteConfirmation = (widgetId) => {
+    setShowDeleteConfirmation(true);
+    setWidgetIdToDelete(widgetId);
+  };
+
+  let navigate = useNavigate();
+
   return (
     <>
+      <PricingPopup
+        showModal={showPricingPopup}
+        setShowModal={setShowPricingPopup}
+      />
+
+      {showDeleteConfirmation && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">Confirm Deletion</h2>
+            <p className="text-sm mb-4">
+              Are you sure you want to delete this widget?
+            </p>
+            <div className="flex justify-end">
+              <button
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 mr-4"
+                onClick={() => setShowDeleteConfirmation(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                onClick={handleDeleteWidget}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deploymentStatus && (
+        <div class="flex flex-col justify-center items-center h-screen fixed w-screen z-50 bg-[#f0f2f5]">
+          <div class="rounded-full h-20 w-20 bg-violet-800 animate-ping"></div>
+          <h1 className="mt-20 text-xl font-bold">
+            Please wait while we are deploying your Pricing Page...
+          </h1>
+        </div>
+      )}
       <NavBar />
       <div
-        className="px-8 py-4 min-h-screen flex justify-center"
+        className="px-8 py-4 pb-20 min-h-screen flex justify-center"
         style={{ backgroundColor: "#f0f2f5" }}
       >
         <ToastContainer />
@@ -125,9 +262,15 @@ const UserAppsPage = () => {
                   </p>
                 </motion.div>
                 <div className="flex justify-end space-x-2 mt-2">
+                  <FaTrash
+                    className="text-red-500 hover:text-red-700 cursor-pointer mr-1"
+                    size={24}
+                    onClick={() => handleDeleteConfirmation(app.widget_id)}
+                  />
                   <FaEdit
                     className="text-blue-600 hover:text-blue-700 cursor-pointer"
                     size={24}
+                    onClick={() => handleEditClick(app.widget_id)}
                   />
                   <FaShareAlt
                     className="text-green-600 hover:text-green-700 cursor-pointer"

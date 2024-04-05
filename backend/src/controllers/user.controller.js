@@ -8,7 +8,7 @@ async function create(req, res) {
       message: "User email cannot be empty",
     });
   }
-
+  //
   // Create a User
   const user = new User({
     email: req.body.email,
@@ -42,7 +42,8 @@ async function findAll(req, res) {
 
 // Find a single user with a userId
 async function findOne(req, res) {
-  User.findById(req.params.userId)
+  // Find user by email
+  User.findOne({ email: req.params.userId })
     .then((user) => {
       if (!user) {
         return res.status(404).send({
@@ -104,6 +105,52 @@ async function update(req, res) {
     });
 }
 
+async function updateStripeKey(req, res) {
+  // Validate Request
+  if (!req.body.stripe_key) {
+    return res.status(400).send({
+      message: "Stripe key can not be empty",
+    });
+  }
+
+  // Find user by email and update it with the request body
+  const user = await User.findOne({ email: req.params.userId });
+  if (!user) {
+    return res.status(404).send({
+      message: "User not found with id " + req.params.userId,
+    });
+  }
+
+  user.stripe_key = req.body.stripe_key;
+  const newUser = await user.save();
+
+  // Send response
+  res.send(newUser);
+}
+
+async function updateStripeWebhook(req, res) {
+  // Validate Request
+  if (!req.body.stripe_webhook) {
+    return res.status(400).send({
+      message: "Stripe webhook can not be empty",
+    });
+  }
+
+  // Find user by email and update it with the request body
+  const user = await User.findOne({ email: req.params.userId });
+  if (!user) {
+    return res.status(404).send({
+      message: "User not found with id " + req.params.userId,
+    });
+  }
+
+  user.stripe_webhook = req.body.stripe_webhook;
+  const newUser = await user.save();
+
+  // Send response
+  res.send(newUser);
+}
+
 // Delete a user with the specified userId in the request
 async function remove(req, res) {
   User.findByIdAndRemove(req.params.userId)
@@ -127,10 +174,29 @@ async function remove(req, res) {
     });
 }
 
+async function isUserPaid(req, res) {
+  try {
+    // Find user
+    const user = await User.findOne({ email: req.params.userId });
+    if (!user) {
+      return res.status(404).send({
+        message: "User not found with id " + req.params.userId,
+      });
+    }
+    // Send response if user is paid
+    res.send(user.isPaid);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 module.exports = {
   create,
   findAll,
   findOne,
   update,
   remove,
+  updateStripeKey,
+  isUserPaid,
+  updateStripeWebhook,
 };

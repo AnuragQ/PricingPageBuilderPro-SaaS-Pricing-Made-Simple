@@ -1,13 +1,14 @@
 // load .env variables
 require("dotenv").config();
-// const Widget = require("../models/widget.model");
+const Widget = require("../models/widget.model");
 const Button_Model = require("../models/button.model");
 const { ObjectId } = require("mongoose").Types;
 const mongoose = require("mongoose");
 const fs = require("fs");
-const archiver = require("archiver");
 const NetlifyAPI = require("netlify");
-
+const JSZip = require("jszip");
+const archiver = require("archiver");
+const path = require("path"); //
 const { v4: uuidv4 } = require("uuid");
 // model has below fields
 // - name
@@ -57,6 +58,7 @@ async function create(req, res) {
     image_url: req.body.image_url || "",
     deployment_url: req.body.deployment_url || "",
     site_id: req.body.site_id || "",
+    currency: req.body.currency || "usd",
   });
 
   // Save Widget in the database
@@ -106,6 +108,11 @@ async function create(req, res) {
 async function findAllOfUser(req, res) {
   Widget.find({ created_by: req.params.email })
     .then((widgets) => {
+      // Sort the widgets by updated_at in descending order
+      widgets.sort((a, b) => {
+        return b.updated_at - a.updated_at;
+      });
+
       data_to_send = [];
       for (let i = 0; i < widgets.length; i++) {
         data_to_send.push({
@@ -193,7 +200,7 @@ async function update(req, res) {
 
 // Delete a widget with the specified widgetId in the request
 async function remove(req, res) {
-  Widget.findByIdAndRemove(req.params.widgetId)
+  Widget.findByIdAndDelete(req.params.widgetId)
     .then((widget) => {
       if (!widget) {
         return res.status(404).send({
@@ -213,15 +220,51 @@ async function remove(req, res) {
       });
     });
 }
+
+function createZipWithHTML(htmlString) {
+  // Ensure the 'source' directory exists
+  fs.mkdirSync("source", { recursive: true });
+
+  // Write the HTML string to 'source/index.html'
+  fs.writeFileSync("source/index.html", htmlString);
+
+  // Create a file to stream archive data to
+  let output = fs.createWriteStream("source.zip");
+  let archive = archiver("zip", {
+    zlib: { level: 9 }, // Sets the compression level
+  });
+
+  // Listen for all archive data to be written
+  output.on("close", function () {
+    console.log(archive.pointer() + " total bytes");
+    console.log(
+      "Archiver has been finalized and the output file descriptor has closed."
+    );
+  });
+
+  // Pipe archive data to the file
+  archive.pipe(output);
+
+  // Append 'source' directory to the archive
+  archive.directory("source/", "source");
+
+  // Finalize the archive
+  archive.finalize();
+}
+
 async function deploy(req, res) {
+  console.log("Deploying widget with id: ", req.params.widgetId);
   try {
-    const widget = await Widget.findOne({ widget_id: req.params.widgetId });
+    const widget = await Widget.findOne({ _id: req.params.widgetId });
     const code = widget.code;
+    console.log("access token", process.env.NETLIFY_ACCESS_TOKEN);
+    console.log(req.params.widgetId);
     const netlifyClient = new NetlifyAPI(process.env.NETLIFY_ACCESS_TOKEN);
     let site_id = widget.site_id;
 
     if (!site_id) {
       const site_name = widget.name || "widget";
+      console.log("site_name", site_name);
       const site = await netlifyClient.createSite({
         body: {
           name: site_name + "-" + uuidv4(),
@@ -229,39 +272,42 @@ async function deploy(req, res) {
       });
       site_id = site.id;
     }
+    createZipWithHTML(code);
 
-    const output = fs.createWriteStream(__dirname + "/widget.zip");
-    const archive = archiver("zip", {
-      zlib: { level: 9 },
-    });
+    // run cli command netlify deploy --dir=source --site=$site_id using child_process
+    const { exec } = require("child_process");
+    console.log("site_id", site_id);
+    exec(
+      `netlify deploy --dir=source --site=${site_id} --prod`,
+      (error, stdout, stderr) => {
+        if (error) {
+          console.error(`exec error: ${error}`);
+          return;
+        }
+        // display stdout line by line and print the line containing "Website URL"
+        const lines = stdout.split("\n");
+        let deployment_url = "";
+        for (const line of lines) {
+          console.log(line);
+          if (line.includes("Website URL")) {
+            deployment_url = line.split(": ")[1];
+            console.log(
+              "deployment_url==========================",
+              deployment_url
+            );
+            break;
+          }
+        }
+        // update the widget with the deployment url
+        widget.deployment_url = deployment_url;
+        widget.site_id = site_id;
+        widget.save();
+        res.send({ deployment_url });
 
-    output.on("close", () => {
-      // sleep for 5 seconds to allow the zip file to be written
-      setTimeout(() => {
-        console.log(archive.pointer() + " total bytes");
-        console.log(
-          "archiver has been finalized and the output file descriptor has closed."
-        );
-      }, 5000);
-      netlifyClient
-        .deploy(site_id, __dirname + "/widget.zip")
-        .then((deploy) => {
-          widget.deployment_url = deploy.deploy.url;
-          widget.site_id = site_id;
-          widget.save();
-          res.send({ message: "Widget deployed successfully!" });
-        })
-        .catch((err) => {
-          console.error(err);
-          res.status(500).send({
-            message: "Could not deploy widget with id " + req.params.widgetId,
-          });
-        });
-    });
-
-    archive.pipe(output);
-    archive.append(code, { name: "index.html" });
-    archive.finalize();
+        console.log("deployment_url", deployment_url.split(" ")[1]);
+        console.error(`stderr: ${stderr}`);
+      }
+    );
   } catch (err) {
     console.error(err);
     res

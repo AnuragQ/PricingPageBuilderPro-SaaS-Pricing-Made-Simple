@@ -166,6 +166,7 @@ const CreateWidget = () => {
           success_url: successUrl,
           failure_url: failureUrl,
           payment_button_ids: buttonsData,
+          currency: currency,
           // Include any other data necessary for your widget
         }
       );

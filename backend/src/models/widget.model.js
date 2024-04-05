@@ -57,7 +57,7 @@ const widgetSchema = new mongoose.Schema({
   failure_url: {
     type: String,
     default: "#",
-  },
+  }, //
   image_url: {
     type: String,
     default: "",
@@ -69,6 +69,10 @@ const widgetSchema = new mongoose.Schema({
   site_id: {
     type: String,
     default: "",
+  },
+  currency: {
+    type: String,
+    default: "usd",
   },
 });
 
