@@ -2,6 +2,12 @@ import React from "react";
 import NavBar from "../components/NavBar";
 
 const Pricing = () => {
+  const handlePayment = (e) => {
+    // Add payment handling logic here
+    e.preventDefault();
+    console.log("Payment handling logic");
+  };
+
   return (
     <>
       <NavBar />
@@ -24,9 +30,9 @@ const Pricing = () => {
                 Optimize Your SaaS Pricing
               </h3>
               <p className="mt-6 text-base leading-7 text-gray-600">
-                Leverage PricingPageBuilderPro to create engaging, tailored
-                pricing pages that resonate with your target audience. Boost
-                your sales with flexible, intuitive pricing options.
+                Leverage Bill Brilliance to create engaging, tailored pricing
+                pages that resonate with your target audience. Boost your sales
+                with flexible, intuitive pricing options.
               </p>
               <div className="mt-10 flex items-center gap-x-4">
                 <h4 className="flex-none text-sm font-semibold leading-6 text-indigo-600">
@@ -109,15 +115,16 @@ const Pricing = () => {
                   </p>
                   <p className="mt-6 flex items-baseline justify-center gap-x-2">
                     <span className="text-5xl font-bold tracking-tight text-gray-900">
-                      $99
+                      $299
                     </span>
                     <span className="text-sm font-semibold leading-6 tracking-wide text-gray-600">
-                      USD/month
+                      USD
                     </span>
                   </p>
                   <a
                     href="#"
                     className="mt-10 block w-full rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    onClick={handlePayment}
                   >
                     Start Building
                   </a>

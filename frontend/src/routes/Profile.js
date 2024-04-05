@@ -18,6 +18,7 @@ const Profile = () => {
   const [showModal, setShowModal] = useState(false);
   const [hideSections, setHideSections] = useState(false);
   const [userIsPaid, setUserIsPaid] = useState(false);
+  const [userPaymentDetails, setUserPaymentDetails] = useState({});
 
   useEffect(() => {
     const userEmail = auth.currentUser.email;

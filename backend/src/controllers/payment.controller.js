@@ -94,7 +94,22 @@ async function webhook(req, res) {
 
   res.status(200);
 }
+
+// Get all the payments of a user
+async function findAll(req, res) {
+  try {
+    const user = await user_model.findOne({ email: req.params.email });
+
+    // Find all payments of the user
+    var payments = await payment.find({ user_email: req.params.email });
+    res.send(payments);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 module.exports = {
   createCheckoutSession,
   webhook,
+  findAll,
 };

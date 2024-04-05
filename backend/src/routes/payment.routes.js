@@ -7,4 +7,7 @@ const payment = require("../controllers/payment.controller.js");
 // Create a new Payment using stripe
 router.post("/create-checkout-session", payment.createCheckoutSession);
 router.post("/webhook", payment.webhook);
+
+// Get all Payments of a user by email
+router.get("/:email", payment.findAll);
 module.exports = router;
