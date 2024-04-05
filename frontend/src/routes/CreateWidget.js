@@ -19,7 +19,7 @@ import ReactDOMServer from "react-dom/server";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-// import { update } from "../../../backend/src/controllers/template.controller";
+import TextField from "@mui/material/TextField";
 
 const CreateWidget = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -35,6 +35,53 @@ const CreateWidget = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [widgetName, setWidgetName] = useState("New Widget");
   const [menuBar, setMenuBar] = useState("");
+  const [contextMenuVisible, setContextMenuVisible] = useState(false);
+  const [contextMenuPosition, setContextMenuPosition] = useState({
+    x: 0,
+    y: 0,
+  });
+
+  // Event listener for right-click on contentRef
+  const handleContextMenu = (e) => {
+    e.preventDefault();
+    setContextMenuVisible(true);
+    setContextMenuPosition({ x: e.clientX, y: e.clientY });
+  };
+
+  // Hide context menu when clicked outside
+  const handleHideContextMenu = () => {
+    setContextMenuVisible(false);
+  };
+
+  useEffect(() => {
+    console.log("Content ref:", contentRef.current);
+    if (contentRef.current) {
+      console.log("Content ref exists");
+      document.querySelectorAll("input[data-unique-key]").forEach((input) => {
+        // Add event listener for right-click (context menu)
+        input.addEventListener("contextmenu", handleContextMenu);
+
+        input.addEventListener("input", (event) => {
+          console.log("Input changed");
+          const inputField = event.target;
+          const uniqueKey = inputField.getAttribute("data-unique-key");
+          console.log("Unique key:", uniqueKey);
+
+          // Find the corresponding element in the content area
+          const correspondingElement = document.querySelector(
+            `#widget-wrapper [data-unique-key="${uniqueKey}"]`
+          );
+          console.log("Corresponding element:", correspondingElement);
+
+          if (correspondingElement) {
+            // Update the text of the corresponding element
+            updateElementText(uniqueKey, inputField.value);
+            console.log("Updated corresponding element");
+          }
+        });
+      });
+    }
+  }, [contentRef]);
 
   const handleCurrencyChange = (event) => {
     setCurrency(event.target.value);
@@ -100,60 +147,60 @@ const CreateWidget = () => {
 
       // HTML boilerplate with your updatedTemplateCode included
       updatedTemplateCode = `
-      <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="UTF-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <script src="https://cdn.tailwindcss.com"></script>
-          </head>
-          <body>
-            ${updatedTemplateCode}
-            <script>
-              const paymentBtns = document.querySelectorAll('[data-payment-btn]')
-              paymentBtns.forEach((btn) => {
-                btn.addEventListener('click', async (e) => {
-                  e.preventDefault()
-                  const paymentId = btn.getAttribute('data-payment-id')
-                  createCheckoutSession(paymentId)
-                    .then((data) => {
-                      console.log(data.url)
-                      window.location.href = data.url; 
-                    })
-                    .catch((error) => {
-                      console.error(error) 
-                    })
+        <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="UTF-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+              <script src="https://cdn.tailwindcss.com"></script>
+            </head>
+            <body>
+              ${updatedTemplateCode}
+              <script>
+                const paymentBtns = document.querySelectorAll('[data-payment-btn]')
+                paymentBtns.forEach((btn) => {
+                  btn.addEventListener('click', async (e) => {
+                    e.preventDefault()
+                    const paymentId = btn.getAttribute('data-payment-id')
+                    createCheckoutSession(paymentId)
+                      .then((data) => {
+                        console.log(data.url)
+                        window.location.href = data.url; 
+                      })
+                      .catch((error) => {
+                        console.error(error) 
+                      })
+                  })
                 })
-              })
 
-              async function createCheckoutSession(paymentId) {
-                try {
-                  const response = await fetch(
-                    '${process.env.REACT_APP_BACKEND_EXPOSED_URL}',
-                    {
-                      method: 'POST', 
-                      headers: {
-                        'Content-Type': 'application/json'
-                      },
-                      body: JSON.stringify({ items: [{ id: paymentId }] }) 
+                async function createCheckoutSession(paymentId) {
+                  try {
+                    const response = await fetch(
+                      '${process.env.REACT_APP_BACKEND_EXPOSED_URL}',
+                      {
+                        method: 'POST', 
+                        headers: {
+                          'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ items: [{ id: paymentId }] }) 
+                      }
+                    )
+
+                    if (!response.ok) {
+                      console.log('Failed to create checkout session:', response);
                     }
-                  )
 
-                  if (!response.ok) {
-                    console.log('Failed to create checkout session:', response);
+                    const data = await response.json() 
+                    return data 
+                  } catch (error) {
+                    console.error('Failed to create checkout session:', error)
                   }
-
-                  const data = await response.json() 
-                  return data 
-                } catch (error) {
-                  console.error('Failed to create checkout session:', error)
                 }
-              }
-            </script>
-          </body>
-        </html>
+              </script>
+            </body>
+          </html>
 
-    `;
+      `;
 
       // Saving the widget with updated template code
       const widgetDataResponse = await axios.post(
@@ -385,22 +432,45 @@ const CreateWidget = () => {
             <Accordion
               key={currentHeadingKey}
               data-unique_key={currentHeadingKey}
+              sx={{
+                boxShadow: 3,
+                margin: "10px 0",
+                borderRadius: "10px",
+                "&:before": { display: "none" },
+                "&.Mui-expanded": { margin: "10px 0" },
+              }}
             >
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>{currentHeading}</Typography>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                sx={{
+                  backgroundColor: "#f5f5f5",
+                  borderRadius: "10px 10px 0 0",
+                  "&.Mui-expanded": { minHeight: 48 },
+                }}
+              >
+                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                  {currentHeading}
+                </Typography>
               </AccordionSummary>
-              <AccordionDetails>
+              <AccordionDetails
+                sx={{ flexDirection: "column", padding: "20px" }}
+              >
                 {currentFields.map((field) => (
-                  <div key={field.unique_key}>
-                    <label>{field.label}</label>
-                    {/* Include the unique_key attribute for each input */}
-                    <input
-                      type="text"
-                      defaultValue={field.value || ""}
-                      data-unique-key={field.unique_key}
-                      onChange={handleInputChange}
-                    />
-                  </div>
+                  <TextField
+                    key={field.unique_key}
+                    label={field.label}
+                    variant="outlined"
+                    defaultValue={field.value || ""}
+                    onChange={(e) => handleInputChange(e, field.unique_key)}
+                    fullWidth
+                    margin="dense"
+                    sx={{ marginBottom: "10px" }}
+                    onContextMenu={(e) => {
+                      e.preventDefault(); // Prevent the default context menu
+                      setContextMenuVisible(true);
+                      setContextMenuPosition({ x: e.clientX, y: e.clientY });
+                    }}
+                  />
                 ))}
               </AccordionDetails>
             </Accordion>
@@ -411,30 +481,47 @@ const CreateWidget = () => {
         currentHeading = item.headingText;
         currentHeadingKey = item.unique_key;
       }
-      // else {
-      // Otherwise, accumulate this item as a field in the current accordion
+      // Accumulate this item as a field in the current accordion
       currentFields.push(item);
-      // }
     });
 
     // After the loop, if there are remaining fields, create an accordion for them
     if (currentFields.length > 0) {
       accordions.push(
-        <Accordion key={currentHeadingKey + "-last"}>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>{currentHeading}</Typography>
+        <Accordion
+          key={currentHeadingKey + "-last"}
+          sx={{
+            boxShadow: 3,
+            margin: "10px 0",
+            borderRadius: "10px",
+            "&:before": { display: "none" },
+            "&.Mui-expanded": { margin: "10px 0" },
+          }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            sx={{
+              backgroundColor: "#f5f5f5",
+              borderRadius: "10px 10px 0 0",
+              "&.Mui-expanded": { minHeight: 48 },
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+              {currentHeading}
+            </Typography>
           </AccordionSummary>
-          <AccordionDetails>
+          <AccordionDetails sx={{ flexDirection: "column", padding: "20px" }}>
             {currentFields.map((field) => (
-              <div key={field.unique_key}>
-                <label>{field.label}</label>
-                {/* Include the unique_key attribute for each input */}
-                <input
-                  type="text"
-                  defaultValue={field.value || ""}
-                  data-unique-key={field.unique_key}
-                />
-              </div>
+              <TextField
+                key={field.unique_key}
+                label={field.label}
+                variant="outlined"
+                defaultValue={field.value || ""}
+                onChange={(e) => handleInputChange(e, field.unique_key)}
+                fullWidth
+                margin="dense"
+                sx={{ marginBottom: "10px" }}
+              />
             ))}
           </AccordionDetails>
         </Accordion>
@@ -458,11 +545,55 @@ const CreateWidget = () => {
     <>
       <NavBar />
       <ToastContainer />
+
+      {contextMenuVisible && (
+        <div
+          className="fixed top-0 left-0 h-full w-full z-50"
+          onClick={handleHideContextMenu}
+        >
+          <div
+            className="absolute bg-white shadow-md rounded-md p-2"
+            style={{
+              top: contextMenuPosition.y,
+              left: contextMenuPosition.x,
+              zIndex: 10000,
+            }}
+          >
+            {/* Context menu content */}
+            <div>Context Menu</div>
+          </div>
+        </div>
+      )}
+
+      <div class="mt-8 flex justify-center items-center fixed z-50 right-8 bottom-8">
+        <button
+          type="button"
+          onClick={handleCreateWidget}
+          class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-base px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 me-2"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          Create Widget
+        </button>
+      </div>
+
       <div className="flex h-fit bg-[#F4F7F6]">
         {/* Background color adjusted to a modern palette */}
         <AnimatePresence>
           <motion.aside
-            className="flex flex-col items-center bg-white shadow-xl overflow-scroll"
+            className="flex flex-col items-center bg-[#f0f2f5] shadow-xl h-screen overflow-scroll"
             variants={sidebarVariants}
             initial={false}
             animate={isCollapsed ? "collapsed" : "expanded"}
@@ -488,30 +619,6 @@ const CreateWidget = () => {
                 className="px-4 py-2"
               >
                 {renderMenu()}
-
-                <div class="mt-8 flex justify-center items-center">
-                  <button
-                    type="button"
-                    onClick={handleCreateWidget}
-                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-base px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-5 w-5 me-2"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 4v16m8-8H4"
-                      />
-                    </svg>
-                    Create Widget
-                  </button>
-                </div>
               </motion.div>
             )}
           </motion.aside>

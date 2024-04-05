@@ -8,6 +8,7 @@ import {
   FaLink,
   FaCode,
   FaTrash,
+  FaDownload,
 } from "react-icons/fa";
 import { auth } from "../config/firebase";
 import axios from "axios";
@@ -111,24 +112,24 @@ const UserAppsPage = () => {
     setDeploymentStatus(true);
 
     // Add a delay of 2 seconds to simulate deployment
-    setTimeout(() => {
-      console.log("App ID:asdasd", appId);
-      // Get the code for the selected app via api call
-      axios
-        .post(`${process.env.REACT_APP_BASE_URL}/api/widgets/deploy/${appId}`)
-        .then((response) => {
-          console.log("Response:", response.data);
-          copyToClipboard(
-            extractUrl(response.data.deployment_url),
-            "URL copied to clipboard!"
-          );
-          setDeploymentStatus(false);
-        })
-        .catch((error) => {
-          console.error("Error fetching user apps:", error);
-          setDeploymentStatus(false);
-        });
-    }, 2000);
+    // setTimeout(() => {
+    console.log("App ID:asdasd", appId);
+    // Get the code for the selected app via api call
+    axios
+      .post(`${process.env.REACT_APP_BASE_URL}/api/widgets/deploy/${appId}`)
+      .then((response) => {
+        console.log("Response:", response.data);
+        copyToClipboard(
+          extractUrl(response.data.deployment_url),
+          "URL copied to clipboard!"
+        );
+        setDeploymentStatus(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching user apps:", error);
+        setDeploymentStatus(false);
+      });
+    // }, 2000);
   };
 
   const handleGetCode = (appId) => {
@@ -172,6 +173,70 @@ const UserAppsPage = () => {
   const handleDeleteConfirmation = (widgetId) => {
     setShowDeleteConfirmation(true);
     setWidgetIdToDelete(widgetId);
+  };
+
+  const handleDownloadCode = (appId) => {
+    if (!userIsPaid) {
+      setShowPricingPopup(true);
+      return;
+    }
+
+    // Get the code for the selected app via api call
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/api/widgets/findOne/${appId}`)
+      .then((response) => {
+        // Create a blob from the response data
+        const blob = new Blob([response.data.code], {
+          type: "text/plain",
+        });
+
+        // Create a URL for the blob
+        const url = window.URL.createObjectURL(blob);
+
+        // Create an anchor element
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "widget-code.html";
+        a.click();
+
+        // Revoke the URL
+        window.URL.revokeObjectURL(url);
+
+        toast.success("Code downloaded successfully!");
+      })
+      .catch((error) => {
+        console.error("Error fetching user apps:", error);
+      });
+  };
+
+  const handleEmbeddedLink = (appId) => {
+    if (!userIsPaid) {
+      setShowPricingPopup(true);
+      return;
+    }
+
+    // Create an iframe string and get deployed URL and copy to clipboard
+    setDeploymentStatus(true);
+
+    axios
+      .post(`${process.env.REACT_APP_BASE_URL}/api/widgets/deploy/${appId}`)
+      .then((response) => {
+        console.log("Response:", response.data);
+
+        // Create an iframe string
+        const iframeString = `<iframe src="${extractUrl(
+          response.data.deployment_url
+        )}" width="100%" height="100%" style="border: none;"></iframe>`;
+
+        // Copy the iframe string to clipboard
+        copyToClipboard(iframeString, "Embedded link copied to clipboard!");
+
+        setDeploymentStatus(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching user apps:", error);
+        setDeploymentStatus(false);
+      });
   };
 
   let navigate = useNavigate();
@@ -288,8 +353,32 @@ const UserAppsPage = () => {
                           handleShareableLink(app.widget_id);
                         }}
                       >
-                        <FaLink size={16} /> Shareable Link
+                        <FaLink size={16} className="text-blue-500" /> Shareable
+                        Link
                       </button>
+
+                      <button
+                        className="flex items-center gap-2 hover:text-blue-600 mt-2"
+                        onClick={() => {
+                          /* Handle embedded link */
+                          handleEmbeddedLink(app.widget_id);
+                        }}
+                      >
+                        <FaLink size={16} className="text-blue-500" /> Embedded
+                        Link
+                      </button>
+
+                      <button
+                        className="flex items-center gap-2 hover:text-blue-600 mt-2"
+                        onClick={() => {
+                          /* Handle download code */
+                          handleDownloadCode(app.widget_id);
+                        }}
+                      >
+                        <FaDownload size={16} className="text-blue-500" />{" "}
+                        Download Code
+                      </button>
+
                       <button
                         className="flex items-center gap-2 hover:text-blue-600 mt-2"
                         onClick={() => {
@@ -297,7 +386,7 @@ const UserAppsPage = () => {
                           handleGetCode(app.widget_id);
                         }}
                       >
-                        <FaCode size={16} /> Get Code
+                        <FaCode size={16} className="text-blue-500" /> Get Code
                       </button>
                     </div>
                   </div>

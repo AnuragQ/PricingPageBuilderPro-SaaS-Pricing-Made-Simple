@@ -15,6 +15,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import currencies from "../resources/currencies";
+import { TextField } from "@mui/material";
 
 const EditWidget = () => {
   const [widgetData, setWidgetData] = useState(null);
@@ -185,11 +186,38 @@ const EditWidget = () => {
                 {/* Render menu items here */}
                 {/* Example: */}
                 <Accordion>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography>Editable Content</Typography>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1a-content"
+                    id="panel1a-header"
+                    sx={{
+                      backgroundColor: "#f5f5f5", // Custom background color for the accordion header
+                      "& .MuiAccordionSummary-expandIconWrapper.Mui-expanded": {
+                        transform: "rotate(90deg)",
+                      },
+                      "& .MuiAccordionSummary-content": {
+                        marginLeft: (theme) => theme.spacing(1),
+                      },
+                    }}
+                  >
+                    <Typography sx={{ fontWeight: "bold" }}>
+                      Editable Content
+                    </Typography>
                   </AccordionSummary>
-                  <AccordionDetails>
-                    <Typography>Heading</Typography>
+                  <AccordionDetails sx={{ backgroundColor: "#ffffff" }}>
+                    <Typography component="div" variant="body2">
+                      {/* Utilize TextField for input here */}
+                      <TextField
+                        label="Success URL"
+                        variant="outlined"
+                        fullWidth
+                        margin="dense"
+                        value={successUrl}
+                        onChange={(e) => setSuccessUrl(e.target.value)}
+                        sx={{ mb: 2 }}
+                      />
+                      {/* Add more TextField inputs as needed */}
+                    </Typography>
                   </AccordionDetails>
                 </Accordion>
 
