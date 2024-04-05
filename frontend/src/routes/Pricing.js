@@ -1,11 +1,25 @@
 import React from "react";
 import NavBar from "../components/NavBar";
+import axios from "axios";
+import { auth } from "../config/firebase";
 
 const Pricing = () => {
+  const userEmail = auth.currentUser.email;
+
   const handlePayment = (e) => {
-    // Add payment handling logic here
     e.preventDefault();
-    console.log("Payment handling logic");
+
+    // Call the api
+    axios
+      .post(
+        `${process.env.REACT_APP_BASE_URL}/api/payments/master/create-checkout-session`,
+        {
+          user_email: userEmail,
+        }
+      )
+      .then((response) => {
+        window.location.href = response.data.url;
+      });
   };
 
   return (

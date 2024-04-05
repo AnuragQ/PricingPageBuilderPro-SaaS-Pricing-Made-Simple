@@ -151,7 +151,7 @@ async function masterWebhook(req, res) {
     event = stripe.webhooks.constructEvent(
       req.body,
       sig,
-      process.env.STRIPE_WEBHOOK_SECRET
+      process.env.STRIPE_MASTER_WEBHOOK_SECRET
     );
   } catch (err) {
     console.log(`Webhook Error: ${err.message}`);
@@ -183,26 +183,23 @@ async function createMasterCheckoutSession(req, res) {
   try {
     // const widget_id = req.body.widget_id;
     // get success and failure urls from the widget using widget_id
-    console.log("req.body.items", req.body.items);
+    console.log("req.body.items", req.body.user_email);
 
     const user_email = req.body.user_email;
-    const sessionItems = await Promise.all(
-      req.body.items.map(async (item) => {
-        const plan = await button_model.findOne({ button_id: item.id });
-        return {
-          price_data: {
-            currency: plan.currency || "usd",
-            product_data: {
-              name: "Premium",
-            },
-            unit_amount: 299 * 100,
+    const sessionItems = [
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: "Premium",
           },
-          quantity: 1,
-        };
-      })
-    );
+          unit_amount: 299 * 100,
+        },
+        quantity: 1,
+      },
+    ];
 
-    console.log("user", user);
+    // console.log("user", user);
     const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY);
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
