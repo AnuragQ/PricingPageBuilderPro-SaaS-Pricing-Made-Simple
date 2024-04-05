@@ -199,7 +199,7 @@ async function createMasterCheckoutSession(req, res) {
       mode: "payment",
 
       line_items: sessionItems,
-      success_url: `${process.env.FRONTEND_URL}/my-apps`,
+      success_url: `${process.env.FRONTEND_URL}/payment-success`,
       cancel_url: `${process.env.FRONTEND_URL}/payment-failed`,
       metadata: {
         user_email: user_email,
