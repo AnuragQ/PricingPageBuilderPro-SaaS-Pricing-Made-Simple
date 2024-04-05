@@ -117,7 +117,104 @@ async function webhook(req, res) {
 
   res.status(200);
 }
+
+async function masterWebhook(req, res) {
+  const jsonStr = req.body.toString(); // Get the raw JSON string
+  const data = JSON.parse(jsonStr);
+  console.log("webhook called", data);
+  const metadata = data.data.object.metadata;
+  if (!metadata || !metadata.user_email) {
+    return res.status(400).send("No metadata found");
+  }
+  
+  
+  const user = await user_model.findOne({ email: metadata.user_email });
+ 
+  const stripe_key = process.env.STRIPE_PRIVATE_KEY;
+  const stripe = require("stripe")(stripe_key);
+  const sig = req.headers["stripe-signature"];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    console.log(`Webhook Error: ${err.message}`);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+  console.log("event", event.type);
+  if (event.type === "checkout.session.completed") {
+    // change the user isPaid to true
+    user.isPaid = true;
+    
+    user.save().then((data) => {
+      res.send(data);
+    }
+    ).catch((err) => {
+      console.log("err", err);
+      res.status(500).send({
+        message:
+          err.message || "Some error occurred while creating the Payment.",
+      });
+    });
+
+
+  }
+
+  res.status(200);
+}
+
+async function createMasterCheckoutSession(req, res) {
+  try {
+    // const widget_id = req.body.widget_id;
+    // get success and failure urls from the widget using widget_id
+    console.log("req.body.items", req.body.items);
+    
+    const user_email = req.body.user_email;
+    const sessionItems = await Promise.all(
+      req.body.items.map(async (item) => {
+        const plan = await button_model.findOne({ button_id: item.id });
+        return {
+          price_data: {
+            currency: plan.currency || "usd",
+            product_data: {
+              name: "Premium",
+            },
+            unit_amount: 299 * 100,
+          },
+          quantity: 1,
+
+        };
+      })
+    );
+    
+    console.log("user", user);
+    const stripe = require("stripe")( process.env.STRIPE_PRIVATE_KEY
+    );
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "payment",
+
+      line_items: sessionItems,
+      success_url: `${process.env.FRONTEND_URL}/my-apps`,
+      cancel_url: `${process.env.FRONTEND_URL}/payment-failed`,
+      metadata: {
+        user_email: user_email,
+      },
+    });
+    res.json({ url: session.url });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({ error: e.message });
+  }
+}
+
 module.exports = {
   createCheckoutSession,
   webhook,
+  createMasterCheckoutSession,
+  masterWebhook,
 };

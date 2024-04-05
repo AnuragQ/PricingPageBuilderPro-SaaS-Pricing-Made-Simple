@@ -14,6 +14,12 @@ app.use(
   express.raw({ type: "application/json" }),
   payment.webhook
 );
+
+app.use(
+  "/api/payments/master/webhook",
+  express.raw({ type: "application/json" }),
+  payment.masterWebhook
+);
 app.use(cors());
 
 app.use(express.json());
