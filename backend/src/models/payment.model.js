@@ -9,12 +9,20 @@ const mongoose = require("mongoose");
 // - description : string
 
 const paymentSchema = new mongoose.Schema({
-  id: {
+  payment_id: {
     type: String,
     required: true,
   },
   session: {
     type: Object,
+    required: true,
+  },
+  widget_id: {
+    type: String,
+    required: true,
+  },
+  user_email: {
+    type: String,
     required: true,
   },
 
