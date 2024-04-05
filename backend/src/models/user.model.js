@@ -8,7 +8,7 @@ const User = new mongoose.Schema({
   // user id is uuid
   user_id: {
     type: String,
-    required: true,
+    // required: true,
   },
   username: {
     type: String,
@@ -30,6 +30,14 @@ const User = new mongoose.Schema({
     default: false,
   },
   stripe_key: {
+    type: String,
+    default: "",
+  },
+  isPaid: {
+    type: Boolean,
+    default: false,
+  },
+  stripe_webhook: {
     type: String,
     default: "",
   },

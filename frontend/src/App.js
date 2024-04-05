@@ -29,6 +29,7 @@ const MyApps = lazy(() => import("./routes/MyApps"));
 const CreateTemplate = lazy(() => import("./routes/CreateTemplate"));
 const Profile = lazy(() => import("./routes/Profile"));
 const EditWidget = lazy(() => import("./routes/EditWidget"));
+const Pricing = lazy(() => import("./routes/Pricing"));
 // templates
 const Template1 = lazy(() => import("./templates/Template1"));
 const Template2 = lazy(() => import("./templates/Template2"));
@@ -59,6 +60,8 @@ const App = () => {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/choose-template" element={<ChooseTemplate />} />
             <Route path="/my-apps" element={<MyApps />} />
+            <Route path="/pricing" element={<Pricing />} />
+
             <Route
               path="/profile"
               element={

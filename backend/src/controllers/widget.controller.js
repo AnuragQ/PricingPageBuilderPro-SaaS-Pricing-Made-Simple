@@ -108,6 +108,11 @@ async function create(req, res) {
 async function findAllOfUser(req, res) {
   Widget.find({ created_by: req.params.email })
     .then((widgets) => {
+      // Sort the widgets by updated_at in descending order
+      widgets.sort((a, b) => {
+        return b.updated_at - a.updated_at;
+      });
+
       data_to_send = [];
       for (let i = 0; i < widgets.length; i++) {
         data_to_send.push({
@@ -195,7 +200,7 @@ async function update(req, res) {
 
 // Delete a widget with the specified widgetId in the request
 async function remove(req, res) {
-  Widget.findByIdAndRemove(req.params.widgetId)
+  Widget.findByIdAndDelete(req.params.widgetId)
     .then((widget) => {
       if (!widget) {
         return res.status(404).send({
