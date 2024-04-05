@@ -99,6 +99,12 @@ const ForgotPassword = () => {
           )}
         </form>
       </div>
+                  {/* Return to Home Link */}
+                  <p className="mt-2 text-center text-sm text-gray-600">
+              <a href="/" className="font-medium text-indigo-600 hover:text-indigo-500">
+                Return to Home
+              </a>
+            </p>
     </div>
   );
 };
