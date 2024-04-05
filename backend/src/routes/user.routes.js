@@ -10,6 +10,15 @@ router.post("/", user.create);
 // Retrieve all Users
 router.get("/", user.findAll);
 
+// Is user paid?
+router.get("/paid/:userId", user.isUserPaid);
+
+// Update stripe customer id
+router.put("/stripe/:userId", user.updateStripeKey);
+
+// update stripe webhook
+router.put("/stripe-webhook/:userId", user.updateStripeWebhook);
+
 // Retrieve a single User with userId
 router.get("/:userId", user.findOne);
 
